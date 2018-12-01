@@ -1,0 +1,14 @@
+[Unit]
+Description=FooterMilter Java Service
+Requires=network.target
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/FooterMilter
+ExecStart=/usr/bin/java -jar FooterMilter.jar -c footermilter.ini
+TimeoutStopSec=5
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
