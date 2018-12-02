@@ -8,7 +8,6 @@ package net.tachtler.jmilter.FooterMilter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -32,6 +31,7 @@ import org.apache.james.mime4j.dom.Entity;
 import org.apache.james.mime4j.dom.Message;
 import org.apache.james.mime4j.dom.MessageBuilder;
 import org.apache.james.mime4j.dom.Multipart;
+import org.apache.james.mime4j.dom.SingleBody;
 import org.apache.james.mime4j.dom.TextBody;
 import org.apache.james.mime4j.dom.field.ContentTypeField;
 import org.apache.james.mime4j.dom.field.FieldName;
@@ -784,6 +784,8 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	 */
 	private void isFooterAvailable(MilterContext context) {
 
+		footerAvailableResult = false;
+
 		if (argsBean.getMapText()
 				.containsKey(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString())
 				|| argsBean.getMapHtml()
@@ -793,64 +795,80 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 
 			footerAvailableResult = true;
 		} else {
-			if (argsBean.getMapText()
-					.containsKey(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString().substring(
-							context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString().indexOf("@")))
-					|| argsBean.getMapHtml()
-							.containsKey(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString()
+
+			/*
+			 * To avoid java.lang.IndexOutOfBoundsException, check if the char @ exists
+			 * inside the mail_addr.
+			 */
+			if (context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString().indexOf("@") >= 0) {
+				if (argsBean.getMapText()
+						.containsKey(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString()
+								.substring(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString()
+										.indexOf("@")))
+						|| argsBean.getMapHtml()
+								.containsKey(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}")
+										.toString().substring(context.getMacros(CommandProcessor.SMFIC_MAIL)
+												.get("{mail_addr}").toString().indexOf("@")))) {
+
+					context.getMacros(CommandProcessor.SMFIC_MAIL).put("{mail_addr}",
+							context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString()
 									.substring(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}")
-											.toString().indexOf("@")))) {
+											.toString().indexOf("@")));
 
-				context.getMacros(CommandProcessor.SMFIC_MAIL).put("{mail_addr}",
-						context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString().substring(context
-								.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString().indexOf("@")));
+					mailFrom = context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString().substring(
+							context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString().indexOf("@"));
 
-				mailFrom = context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString().substring(
-						context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString().indexOf("@"));
+					footerAvailableResult = true;
+				} else {
 
-				footerAvailableResult = true;
-			} else {
-
-				footerAvailableResult = false;
-
-				/*
-				 * Iterate over the mapText, and if a from address entry will be a part of the
-				 * mail_addr, then take that match as mailFrom.
-				 */
-				Iterator<Entry<String, String>> iteratorMapText = argsBean.getMapText().entrySet().iterator();
-				while (iteratorMapText.hasNext()) {
-					Map.Entry<String, String> pair = (Map.Entry<String, String>) iteratorMapText.next();
+					/*
+					 * To avoid java.lang.IndexOutOfBoundsException, check if the char @ exists
+					 * inside the mail_addr.
+					 */
 					if (context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString()
-							.substring(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString()
-									.indexOf("@") + 1)
-							.contains(pair.getKey().substring(pair.getKey().indexOf("@") + 1))) {
-						mailFrom = pair.getKey();
-						footerAvailableResult = true;
-						break;
+							.indexOf("@") >= 0) {
+
+						/*
+						 * Iterate over the mapText, and if a from address entry will be a part of the
+						 * mail_addr, then take that match as mailFrom.
+						 */
+						Iterator<Entry<String, String>> iteratorMapText = argsBean.getMapText().entrySet().iterator();
+						while (iteratorMapText.hasNext()) {
+
+							Map.Entry<String, String> pair = (Map.Entry<String, String>) iteratorMapText.next();
+							if (context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString()
+									.substring(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}")
+											.toString().indexOf("@") + 1)
+									.contains(pair.getKey().substring(pair.getKey().indexOf("@") + 1))) {
+								mailFrom = pair.getKey();
+								footerAvailableResult = true;
+								break;
+							}
+
+						}
+
+						/*
+						 * Iterate over the mapHtml, and if a from address entry will be a part of the
+						 * mail_addr, then take that match as mailFrom.
+						 */
+						Iterator<Entry<String, String>> iteratorMapHtml = argsBean.getMapHtml().entrySet().iterator();
+						while (iteratorMapHtml.hasNext()) {
+							Map.Entry<String, String> pair = (Map.Entry<String, String>) iteratorMapHtml.next();
+							if (context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString()
+									.substring(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}")
+											.toString().indexOf("@") + 1)
+									.contains(pair.getKey().substring(pair.getKey().indexOf("@") + 1))) {
+								mailFrom = pair.getKey();
+								footerAvailableResult = true;
+								break;
+							}
+
+						}
+
 					}
-
-				}
-
-				/*
-				 * Iterate over the mapHtml, and if a from address entry will be a part of the
-				 * mail_addr, then take that match as mailFrom.
-				 */
-				Iterator<Entry<String, String>> iteratorMapHtml = argsBean.getMapHtml().entrySet().iterator();
-				while (iteratorMapHtml.hasNext()) {
-					Map.Entry<String, String> pair = (Map.Entry<String, String>) iteratorMapHtml.next();
-					if (context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString()
-							.substring(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString()
-									.indexOf("@") + 1)
-							.contains(pair.getKey().substring(pair.getKey().indexOf("@") + 1))) {
-						mailFrom = pair.getKey();
-						footerAvailableResult = true;
-						break;
-					}
-
 				}
 
 			}
-
 		}
 
 		log.debug("*mailFrom                               : " + mailFrom);
@@ -865,23 +883,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	 */
 	private String getTextBody(Entity entity) {
 		TextBody textBody = (TextBody) entity.getBody();
-		StringBuffer stringBuffer = new StringBuffer();
-		try {
-			Reader reader = textBody.getReader();
-			int count;
-			while ((count = reader.read()) != -1) {
-				stringBuffer.append((char) count);
-			}
-		} catch (IOException eIOException) {
-			log.error(
-					"***** Program stop, because FooterMilter detects a runtime error! ***** (For more details, see error messages and caused by below).");
-			log.error("IOException                             : " + eIOException);
-			log.error(ExceptionUtils.getStackTrace(eIOException));
-		}
-
-		log.debug("getTextBody  <- (Start at next line) -> : " + System.lineSeparator() + stringBuffer.toString());
-
-		return stringBuffer.toString();
+		return getBody(entity, textBody);
 	}
 
 	/**
@@ -892,17 +894,29 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	 */
 	private String getBinaryBody(Entity entity) {
 		BinaryBody binaryBody = (BinaryBody) entity.getBody();
-		String binaryBodyString = null;
+		return getBody(entity, binaryBody);
+	}
+
+	/**
+	 * Convert from Object (Body) while using the InputStream reader to String.
+	 * Consider the Content-Type while encoding as well.
+	 * 
+	 * @param entity
+	 * @param body
+	 * @return String
+	 */
+	private String getBody(Entity entity, Body body) {
+		String bodyString = null;
 		try {
-			InputStream inputStream = binaryBody.getInputStream();
+			InputStream inputStream = ((SingleBody) body).getInputStream();
 			byte[] bytes = IOUtils.toByteArray(inputStream);
 
 			if (entity.getContentTransferEncoding().equalsIgnoreCase("base64")) {
 				ByteBuf byteBuf = Unpooled.buffer(bytes.length);
 				byteBuf.writeBytes(bytes);
-				binaryBodyString = Base64.encode(byteBuf, true).toString(StandardCharsets.UTF_8);
+				bodyString = Base64.encode(byteBuf, true).toString(StandardCharsets.UTF_8);
 			} else {
-				binaryBodyString = new String(bytes);
+				bodyString = new String(bytes);
 			}
 
 		} catch (IOException eIOException) {
@@ -912,9 +926,9 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 			log.error(ExceptionUtils.getStackTrace(eIOException));
 		}
 
-		log.debug("getBinaryBody <- (Start at next line) -> : " + System.lineSeparator() + binaryBodyString);
+		log.debug("getObjectBody <- (Start at next line) -> : " + System.lineSeparator() + bodyString);
 
-		return binaryBodyString;
+		return bodyString;
 	}
 
 	/**
@@ -931,12 +945,12 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		if (null != entity.getDispositionType()) {
 			if (!entity.getDispositionType().equalsIgnoreCase("attachment")) {
 				bodyContent.append(argsBean.getMapText().get(mailFrom));
-				bodyContent.append(System.lineSeparator());
 			}
 		} else {
 			bodyContent.append(argsBean.getMapText().get(mailFrom));
-			bodyContent.append(System.lineSeparator());
 		}
+
+		bodyContent.append(System.lineSeparator());
 
 		log.debug("Content-Type: text/plain                : ");
 	}
@@ -1073,7 +1087,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		/*
 		 * If available, add "preamble" before the multipart messages.
 		 */
-		if (null != multipart.getPreamble()) {
+		if (null != multipart.getPreamble() && !(multipart.getParent().getBody() instanceof MessageImpl)) {
 			bodyContent.append(multipart.getPreamble());
 			bodyContent.append(System.lineSeparator());
 		}
@@ -1123,11 +1137,12 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		 */
 		bodyContent.append("--");
 		bodyContent.append(System.lineSeparator());
+		bodyContent.append(System.lineSeparator());
 
 		/*
 		 * If available, add "epilogue" after the multipart messages.
 		 */
-		if (null != multipart.getEpilogue()) {
+		if (null != multipart.getEpilogue() && !(multipart.getParent().getBody() instanceof MessageImpl)) {
 			bodyContent.append(multipart.getEpilogue());
 			bodyContent.append(System.lineSeparator());
 		}
