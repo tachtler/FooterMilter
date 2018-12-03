@@ -6,6 +6,7 @@
 package net.tachtler.jmilter.FooterMilter;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -25,6 +26,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.james.mime4j.MimeException;
+import org.apache.james.mime4j.codec.EncoderUtil;
 import org.apache.james.mime4j.dom.BinaryBody;
 import org.apache.james.mime4j.dom.Body;
 import org.apache.james.mime4j.dom.Entity;
@@ -35,6 +37,7 @@ import org.apache.james.mime4j.dom.SingleBody;
 import org.apache.james.mime4j.dom.TextBody;
 import org.apache.james.mime4j.dom.field.ContentTypeField;
 import org.apache.james.mime4j.dom.field.FieldName;
+import org.apache.james.mime4j.io.InputStreams;
 import org.apache.james.mime4j.message.DefaultMessageBuilder;
 import org.apache.james.mime4j.message.MessageImpl;
 import org.apache.logging.log4j.LogManager;
@@ -876,6 +879,29 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	}
 
 	/**
+	 * Create a "Quoted Printable" string.
+	 * 
+	 * @param entity
+	 * @param footer
+	 * @return String
+	 */
+	private String createQuotedPrintable(String string) {
+		InputStream inputStreamQuotedPrintable = InputStreams.create(string, StandardCharsets.UTF_8);
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+		try {
+			EncoderUtil.encodeQBinary(inputStreamQuotedPrintable, byteArrayOutputStream);
+		} catch (IOException eIOException) {
+			log.error(
+					"***** Program stop, because FooterMilter detects a runtime error! ***** (For more details, see error messages and caused by below).");
+			log.error("IOException                             : " + eIOException);
+			log.error(ExceptionUtils.getStackTrace(eIOException));
+		}
+
+		return new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
+	}
+
+	/**
 	 * Convert from Entity part/message.getBody() to String.
 	 * 
 	 * @param entity
@@ -915,6 +941,11 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 				ByteBuf byteBuf = Unpooled.buffer(bytes.length);
 				byteBuf.writeBytes(bytes);
 				bodyString = Base64.encode(byteBuf, true).toString(StandardCharsets.UTF_8);
+			} else if (entity.getContentTransferEncoding().equalsIgnoreCase("quoted-printable")) {
+				InputStream inputStreamQuotedPrintable = InputStreams.create(bytes);
+				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+				EncoderUtil.encodeQBinary(inputStreamQuotedPrintable, byteArrayOutputStream);
+				bodyString = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
 			} else {
 				bodyString = new String(bytes);
 			}
@@ -940,14 +971,31 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	private void addTextWithFooter(Entity entity) {
 		bodyContent.append(getTextBody(entity));
 
-		log.debug("*part.getDispositionType()              : " + entity.getDispositionType());
+		log.debug("*entity.getDispositionType()            : " + entity.getDispositionType());
+		log.debug("*entity.getContentTransferEncoding()    : " + entity.getContentTransferEncoding());
 
 		if (null != entity.getDispositionType()) {
 			if (!entity.getDispositionType().equalsIgnoreCase("attachment")) {
-				bodyContent.append(argsBean.getMapText().get(mailFrom));
+				if (null != entity.getContentTransferEncoding()) {
+					if (entity.getContentTransferEncoding().equalsIgnoreCase("quoted-printable")) {
+						bodyContent.append(createQuotedPrintable(argsBean.getMapText().get(mailFrom)));
+					} else {
+						bodyContent.append(argsBean.getMapText().get(mailFrom));
+					}
+				} else {
+					bodyContent.append(argsBean.getMapText().get(mailFrom));
+				}
 			}
 		} else {
-			bodyContent.append(argsBean.getMapText().get(mailFrom));
+			if (null != entity.getContentTransferEncoding()) {
+				if (entity.getContentTransferEncoding().equalsIgnoreCase("quoted-printable")) {
+					bodyContent.append(createQuotedPrintable(argsBean.getMapText().get(mailFrom)));
+				} else {
+					bodyContent.append(argsBean.getMapText().get(mailFrom));
+				}
+			} else {
+				bodyContent.append(argsBean.getMapText().get(mailFrom));
+			}
 		}
 
 		bodyContent.append(System.lineSeparator());
@@ -963,6 +1011,9 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	 */
 	private void addHtmlWithFooter(Entity entity) {
 
+		log.debug("*entity.getDispositionType()            : " + entity.getDispositionType());
+		log.debug("*entity.getContentTransferEncoding()    : " + entity.getContentTransferEncoding());
+
 		/*
 		 * Check if a well formed HTML content will be found. If it's true, customize
 		 * the well formed HTML content. If it's false, add the HTML content at the end
@@ -976,10 +1027,26 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 
 			if (null != entity.getDispositionType()) {
 				if (!entity.getDispositionType().equalsIgnoreCase("attachment")) {
-					bodyContent.append(argsBean.getMapHtml().get(mailFrom));
+					if (null != entity.getContentTransferEncoding()) {
+						if (entity.getContentTransferEncoding().equalsIgnoreCase("quoted-printable")) {
+							bodyContent.append(createQuotedPrintable(argsBean.getMapHtml().get(mailFrom)));
+						} else {
+							bodyContent.append(argsBean.getMapHtml().get(mailFrom));
+						}
+					} else {
+						bodyContent.append(argsBean.getMapHtml().get(mailFrom));
+					}
 				}
 			} else {
-				bodyContent.append(argsBean.getMapHtml().get(mailFrom));
+				if (null != entity.getContentTransferEncoding()) {
+					if (entity.getContentTransferEncoding().equalsIgnoreCase("quoted-printable")) {
+						bodyContent.append(createQuotedPrintable(argsBean.getMapHtml().get(mailFrom)));
+					} else {
+						bodyContent.append(argsBean.getMapHtml().get(mailFrom));
+					}
+				} else {
+					bodyContent.append(argsBean.getMapHtml().get(mailFrom));
+				}
 			}
 
 			bodyContent.append("</body>");
@@ -991,10 +1058,26 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 
 			if (null != entity.getDispositionType()) {
 				if (!entity.getDispositionType().equalsIgnoreCase("attachment")) {
-					bodyContent.append(argsBean.getMapHtml().get(mailFrom));
+					if (null != entity.getContentTransferEncoding()) {
+						if (entity.getContentTransferEncoding().equalsIgnoreCase("quoted-printable")) {
+							bodyContent.append(createQuotedPrintable(argsBean.getMapHtml().get(mailFrom)));
+						} else {
+							bodyContent.append(argsBean.getMapHtml().get(mailFrom));
+						}
+					} else {
+						bodyContent.append(argsBean.getMapHtml().get(mailFrom));
+					}
 				}
 			} else {
-				bodyContent.append(argsBean.getMapHtml().get(mailFrom));
+				if (null != entity.getContentTransferEncoding()) {
+					if (entity.getContentTransferEncoding().equalsIgnoreCase("quoted-printable")) {
+						bodyContent.append(createQuotedPrintable(argsBean.getMapHtml().get(mailFrom)));
+					} else {
+						bodyContent.append(argsBean.getMapHtml().get(mailFrom));
+					}
+				} else {
+					bodyContent.append(argsBean.getMapHtml().get(mailFrom));
+				}
 			}
 
 			log.debug("Content-Type: text/html unformatted     : ");
