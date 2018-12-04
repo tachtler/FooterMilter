@@ -109,25 +109,23 @@ For file system hygiene, the **complete directory** in which the **FooterMilter*
   - If you want to use a **target directory other than** `/opt`,
   - or the **directory name is NOT** `FooterMilter` **to be named,**
 
-must have the file
+the file
 
   * `footermilter.service`
 
-**also be adapted !!!**
+** must also be adapted !!!**
 
 #### footermilter.service: Set up service / Deamon start
 
-Before you start the configuration of the contents, you can use the **Start/Stopp/Restart-Script** included in the **Package** with the designation
+Before you start the configuration of the contents, you can use the **Start/Stop/Restart-Script** included in the **Package** with the designation
 
   * `footermilter.service`
 
 the automatic start/stop/restart of the **FooterMilter** under **systemd**.
 
-To do this, first copy the **Start/Stopp/Restart script** with the following command to the directory
+To do this, first copy the **Start/Stop/Restart script** with the following command to the directory
  
   * `/usr/lib/systemd/system`
-  
-can be moved:
 
 `# mv /opt/footerMilter/footermilter.service /usr/lib/system/system/footermilter.service`
 
@@ -135,7 +133,7 @@ Then the following command must be used to announce the new script to the **syst
 
 `# systemctl daemon-reload`
  
-In order to have **FooterMilter**, which runs as `service/deamon` as **background process**, available even after a restart of the server, the `service/deamon` should be started with the server, which can be realized with the following command:
+In order to have **FooterMilter**, which runs as `service/deamon` as **background process** available, even after a restart of the server, the `service/deamon` should be started with the server, which can be realized with the following command:
 
 ```
 # systemctl enable footermilter.service`
@@ -160,7 +158,7 @@ enabled
 
 The content of the configuration file `/opt/FooterMilter/log4j2.xml` determines to which **directory LOG data should be written**, if necessary.
 
-By **default**, the log data is written to:
+By **default**, the log data is written to the directory:
  
  * `/var/log/FooterMilter`
 
@@ -169,21 +167,21 @@ These and other settings can be made in this file on the subject of logging. See
  
 #### Main configuration file: footermilter.ini
 
-:exclamation: **IMPORTANT** - ** The default configuration file is located under** `/opt/FooterMilter/footermilter.ini`
+:exclamation: **IMPORTANT** - **The default configuration file is located under** `/opt/FooterMilter/footermilter.ini`
 
 :exclamation: **IMPORTANT**
 
   - If you want to use a **target directory other than** `/opt`,
   - or the **directory name is NOT** `FooterMilter` **to be named,**
 
-must have the file
+the file
 
   * `footermilter.service`
 
-**also be adapted !!!**
+**must also be adapted !!!**
 
-The main configuration file of the **FooterMilter** - **''footermilter.ini''** includes all settings for
-  * the start and its **start parameters** - section `[server]`
+The main configuration file of the **FooterMilter** - `footermilter.ini` includes all settings for
+  * the start and the **start parameters** - section `[server]`
   * the configuration of the **footer** section to be used `[footer]`
 
 #### Section: [service]
@@ -195,7 +193,7 @@ The following parameters can be set in the section `[server]`:
 | `listen`    | `127.0.0.1`  | IPv4-address or hostname where the service/daemon should be reachable          |
 | `port`      | `10099`       | Port where the service/daemon should be reachable                              |
 | `logging`   | `false`       | Activation of TCP logging from [JMilter](https://github.com/nightcode/jmilter) |
-| `loglevel`  | `INFO`        | Log-Level for TCP-Logging of [JMilter](https://github.com/nightcode/jmilter) |
+| `loglevel`  | `INFO`        | Log-Level for TCP-Logging of [JMilter](https://github.com/nightcode/jmilter)   |
 
 :exclamation: **NOTE** - **Enabling logging activates a TCP log which is very talkative!**
 
@@ -248,7 +246,7 @@ The following **special feature** applies to the
  * **Parameter:** `text` and
  * **Parameter:** `html`
 
-For **better readability** during the configuration of the parameters `text` and `html`, e.g. a
+For **better readability** during the configuration of the parameters `text` and `html`, e.g. add a
 
  * `\` **(backslash)**
  
@@ -455,7 +453,7 @@ html = <br\>\n<br\>\n<span style=\"font-family:monospace; color:#000000\">--&nbs
 
 ### First Start 
 
-The **FooterMilter** `service/daemon` can be started with the following commands:
+The **FooterMilter** `service/daemon` can be started with the following command:
 
 `# systemctl start footermilter.service`
 
@@ -477,7 +475,7 @@ Nov 26 12:08:43 server70.idmz.tachtler.net java[12118]: INFO: [MilterGatewayM...
 Hint: Some lines were ellipsized, use -l to show in full.
 ```
 
-The following query shows on which IPv4 address and port the **FooterMilter** is listening:
+The following query shows, on which IPv4 address and port the **FooterMilter** is listening:
 
 ```
 # netstat -tulpen | grep java
