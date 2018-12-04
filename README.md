@@ -9,6 +9,13 @@ The following DokuWiki contains detailed instructions for installation and confi
 ## Installation and Configuration
 The description of the installation and configuration of **FooterMilter** is divided into the following parts sections:
 
-
+ * [Prerequisites](README.md#prerequisites)
+ * [Download](README.md#download)
 
 ### Prerequisites
+There is only one dependency for the execution of FooterMilter
+ * Running **Java** installation e.g. [OpenJDK](https://openjdk.java.net/) **from version 1.8** or higher
+ 
+### Download
+Under the following link, you can download the executable **Java** - **`FooterMilter.jar`** archive file **and the required dependencies as a package**:
+ * [GitHub - tachtler/FooterMilter](https://github.com/tachtler/FooterMilter)
