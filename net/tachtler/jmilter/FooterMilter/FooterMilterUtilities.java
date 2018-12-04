@@ -187,7 +187,6 @@ public class FooterMilterUtilities {
 			stringBuffer.append("</body>");
 			stringBuffer.append(splitString[1].toString());
 
-			log.debug("Content-Type: text/html formatted       : ");
 		} else {
 			stringBuffer.append(entityTextBody);
 
@@ -214,11 +213,9 @@ public class FooterMilterUtilities {
 					stringBuffer.append(footer);
 				}
 			}
-
-			log.debug("Content-Type: text/html unformatted     : ");
 		}
 
-		log.debug("Content-Type: text/html                 : ");
+		log.debug("Content-Type: text/html                 : " + stringBuffer.toString());
 
 		return stringBuffer.toString();
 	}
@@ -237,7 +234,7 @@ public class FooterMilterUtilities {
 		stringBuffer.append(FooterMilterUtilities.getBinaryBody(entity));
 		stringBuffer.append(System.lineSeparator());
 
-		log.debug("Content-Type: \"binary-content\"          : ");
+		log.debug("Content-Type: \"binary-content\"          : " + stringBuffer.toString());
 
 		return stringBuffer.toString();
 	}
