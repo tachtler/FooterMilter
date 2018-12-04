@@ -483,3 +483,52 @@ tcp   0   0 192.168.0.70:10099      0.0.0.0:*          LISTEN      0          56
 
 * _The listening on the IPv4 address_ `192.168.0.70` _and port_ `10099''` _was configured here._
 
+### Postfix Configuration: Postfix
+
+The following configurations must be performed as a minimum in order to be able to make [Postfix](http://www.postfix.org/)
+to be able to access the **FooterMilter** `service/daemon`:
+
+:exclamation: **IMPORTANT** - **Please do not include BEFORE - DKIM - , because otherwise the SIGNATUR will break!**
+
+ 
+#### /etc/postfix/main.cf
+
+The following change must be made to the [Postfix](http://www.postfix.org/) configuration file:
+
+  * `/etc/postfix/main.cf`
+
+(** Relevant excerpt only**):
+
+```
+# --------------------------------------------------------------------------------
+# New - http://www.postfix.org/MILTER_README.html
+# MILTER CONFIGURATIONS
+# --------------------------------------------------------------------------------
+
+# FooterMilter (footer_milter)
+footer_milter = inet:192.168.0.70:10099
+```
+
+#### /etc/postfix/master.cf 
+
+The following change must be made to the [Postfix](http://www.postfix.org/) configuration file :
+
+  * `/etc/postfix/master.cf`
+
+(** Relevant excerpt only**):
+
+```
+#
+# Postfix master process configuration file.  For details on the format
+# of the file, see the master(5) manual page (command: "man 5 master").
+#
+# Do not forget to execute "postfix reload" after editing this file.
+#
+# ==========================================================================
+# service type  private unpriv  chroot  wakeup  maxproc command + args
+#               (yes)   (yes)   (yes)   (never) (100)
+# ==========================================================================
+smtp      inet  n       -       n       -       -       smtpd
+# FooterMilter
+   -o smtpd_milters=${footer_milter}
+```
