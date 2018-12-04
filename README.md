@@ -19,6 +19,7 @@ The description of the installation and configuration of **FooterMilter** is div
      - [Main configuration file: footermilter.ini](README.md#main-configuration-file-footermilterini)
         - [Section: [service]](README.md#section-service)
         - [Section: [footer]](README.md#section-footer)
+ 5. [footerMilter: First Start](README.md#footermilter-first-start)
 
 ### Prerequisites
 There is only one dependency for the execution of FooterMilter
@@ -473,7 +474,7 @@ Nov 26 12:08:43 server70.idmz.tachtler.net java[12118]: INFO: [MilterGatewayM...
 Hint: Some lines were ellipsized, use -l to show in full.
 ```
 
-The following query shows on which IPv4 address and port the listener is listening:
+The following query shows on which IPv4 address and port the **FooterMilter** is listening:
 
 ```
 # netstat -tulpen | grep java
@@ -481,3 +482,4 @@ tcp   0   0 192.168.0.70:10099      0.0.0.0:*          LISTEN      0          56
 ```
 
 * _The listening on the IPv4 address_ `192.168.0.70` _and port_ `10099''` _was configured here._
+
