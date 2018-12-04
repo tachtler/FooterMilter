@@ -147,3 +147,16 @@ or
 # systemctl is-enabled footermilter.service
 enabled
 ```
+
+#### log4j2.xml - Log directory: /var/log/FooterMilter
+
+The content of the configuration file `/opt/FooterMilter/log4j2.xml` determines to which **directory LOG data should be written**, if necessary.
+
+By **default**, the log data is written to:
+ 
+ * `/var/log/FooterMilter`
+
+These and other settings can be made in this file on the subject of logging. See also the external link:
+  * [Log4j - Configuration Log4j 2 - Apache Log4j 2](https://logging.apache.org/log4j/2.x/manual/configuration.html)
+ 
+ 
