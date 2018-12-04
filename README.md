@@ -16,6 +16,9 @@ The description of the installation and configuration of **FooterMilter** is div
      - [Destination directory: /opt](README.md#destination-directory-opt)
      - [footermilter.service: Set up service / Deamon start](README.md#footermilterservice-set-up-service--deamon-start)
      - [log4j2.xml - Log directory: /var/log/FooterMilter](README.md#log4j2xml---log-directory-varlogfootermilter)
+     - [Main configuration file: footermilter.ini](README.md#main-configuration-file-footermilterini)
+        - [Section: [service]](README.md#section-service)
+        - [Section: [footer]](README.md#section-footer)
 
 ### Prerequisites
 There is only one dependency for the execution of FooterMilter
