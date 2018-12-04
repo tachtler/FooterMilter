@@ -553,34 +553,44 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 			log.debug("*bodyContent.toString()                 : " + bodyContent.toString());
 
 			/*
-			 * Copy the modified String into the bodyModified byte array.
+			 * Check footerAvailableResult again, because if inside the message a signature
+			 * was detected, the footerAvailableResult will be false, to prevent changing
+			 * the content, because this will break the signature!
 			 */
-			bodyModified = bodyContent.toString().getBytes(StandardCharsets.UTF_8);
+			if (footerAvailableResult) {
 
-			/*
-			 * Replace the original body with the modified bodyModified byte array.
-			 */
-			messageModificationService.replaceBody(context, bodyModified);
+				/*
+				 * Copy the modified String into the bodyModified byte array.
+				 */
+				bodyModified = bodyContent.toString().getBytes(StandardCharsets.UTF_8);
 
-			log.debug("messageModificationService.replaceBody  : " + bodyModified.toString());
+				/*
+				 * Replace the original body with the modified bodyModified byte array.
+				 */
+				messageModificationService.replaceBody(context, bodyModified);
 
-			/*
-			 * Add the header tag for mail body modifying (using footer) - CR/LF
-			 * {daemon_name}.
-			 */
-			addHeaderContent.append("Mail body modified (using footer)");
-			addHeaderContent.append(System.lineSeparator());
-			addHeaderContent.append("by ");
-			addHeaderContent.append(context.getMacros(CommandProcessor.SMFIC_CONNECT).get("{daemon_name}").toString());
-			addHeaderContent.append(System.lineSeparator());
-			addHeaderContent.append("for <");
-			addHeaderContent.append(mailFrom);
-			addHeaderContent.append(">");
+				log.debug("messageModificationService.replaceBody  : " + bodyModified.toString());
 
-			messageModificationService.addHeader(context, "X-FooterMilter-Modified", addHeaderContent.toString());
+				/*
+				 * Add the header tag for mail body modifying (using footer) - CR/LF
+				 * {daemon_name}.
+				 */
+				addHeaderContent.append("Mail body modified (using footer)");
+				addHeaderContent.append(System.lineSeparator());
+				addHeaderContent.append("by ");
+				addHeaderContent
+						.append(context.getMacros(CommandProcessor.SMFIC_CONNECT).get("{daemon_name}").toString());
+				addHeaderContent.append(System.lineSeparator());
+				addHeaderContent.append("for <");
+				addHeaderContent.append(mailFrom);
+				addHeaderContent.append(">");
 
-			log.debug("messageModificationService.addHeader    : " + "X-FooterMilter-Modified: "
-					+ addHeaderContent.toString());
+				messageModificationService.addHeader(context, "X-FooterMilter-Modified", addHeaderContent.toString());
+
+				log.debug("messageModificationService.addHeader    : " + "X-FooterMilter-Modified: "
+						+ addHeaderContent.toString());
+
+			}
 
 		}
 
@@ -945,6 +955,16 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 			 * contentTypeField.
 			 */
 			contentTypeField = (ContentTypeField) multipart.getParent().getHeader().getField(FieldName.CONTENT_TYPE);
+
+			/*
+			 * If a signed part was found, STOP changing the content by setting the
+			 * footerAvailableResult to false, because this will break any signatures!
+			 */
+			if (contentTypeField.getMimeType().toLowerCase().contains("signed")) {
+				footerAvailableResult = false;
+
+				log.debug("*contentTypeField.getMimeType()         : " + contentTypeField.getMimeType());
+			}
 
 			/*
 			 * In front of every boundary the '--' must be specified.
