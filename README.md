@@ -36,3 +36,29 @@ Download the **FooterMilter and the required dependencies as a package** using f
 After downloading the **FooterMilter archive** into the `/tmp` directory, you can now **switch to** the `/tmp` **directory** using the following command:
 
 `# cd /tmp`
+
+Afterwards you can **unzip** the previously downloaded file `/tmp/master.zip` with the following command:
+
+`# unzip /tmp/master.zip`
+
+which creates the following **directory structure**, which can be listed with the following command:
+
+`# ls -l /tmp/FooterMilter-master/ `
+
+Whether the downloaded **Java** - `FooterMilter.jar` archive file is **executable** can be **tested with the following command** and should produce an output like the following one:
+```
+# java -jar /tmp/FooterMilter-master/FooterMilter.jar -h
+usage: /path/to/java -jar /path/to/FooterMilter.jar
+       [-c <path and name of the config file>] [-h] [-v] [-d]
+
+FooterMilter for Sendmail or Postfix to insert a footer at the end of the body.
+
+ -c,--config <arg>   [REQUIRED] Path and name of the config file
+ -d,--debug          DEBUG mode with runtime output
+ -h,--help           Print this usage information
+ -v,--version        Version of the program
+
+Copyright (c) 2018 Klaus Tachtler, <klaus@tachtler.net>.
+All Rights Reserved.
+Version 1.0.
+```
