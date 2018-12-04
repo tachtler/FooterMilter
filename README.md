@@ -19,7 +19,7 @@ The description of the installation and configuration of **FooterMilter** is div
      - [Main configuration file: footermilter.ini](README.md#main-configuration-file-footermilterini)
         - [Section: [service]](README.md#section-service)
         - [Section: [footer]](README.md#section-footer)
- 5. [footerMilter: First Start](README.md#footermilter-first-start)
+ 5. [First Start](README.md#first-start)
  6. [Postfix Configuration](README.md#postfix-configuration)
      - [/etc/postfix/main.cf](README.md#etcpostfixmaincf)
      - [/etc/postfix/master.cf](README.md#etcpostfixmastercf)
@@ -453,7 +453,7 @@ html = <br\>\n<br\>\n<span style=\"font-family:monospace; color:#000000\">--&nbs
 ################################################################################
 ```
 
-### footerMilter: First Start 
+### First Start 
 
 The **FooterMilter** `service/daemon` can be started with the following commands:
 
