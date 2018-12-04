@@ -449,3 +449,35 @@ html = <br\>\n<br\>\n<span style=\"font-family:monospace; color:#000000\">--&nbs
 ################################################################################
 ```
 
+### footerMilter: First Start 
+
+The **FooterMilter** `service/daemon` can be started with the following commands:
+
+`# systemctl start footermilter.service`
+
+The following command can be used to query the status of the **FooterMilter** `service/daemon`:
+
+```
+# systemctl status footermilter.service
+● footermilter.service - FooterMilter Java Service
+   Loaded: loaded (/usr/lib/systemd/system/footermilter.service; enabled; vendor preset: disabled)
+   Active: active (running) since Mon 2018-11-26 12:08:42 CET; 4s ago
+ Main PID: 12118 (java)
+   CGroup: /system.slice/footermilter.service
+           └─12118 /usr/bin/java -jar FooterMilter.jar -c footermilter.ini
+
+Nov 26 12:08:42 server70.idmz.tachtler.net systemd[1]: Started FooterMilter J...
+Nov 26 12:08:42 server70.idmz.tachtler.net systemd[1]: Starting FooterMilter ...
+Nov 26 12:08:43 server70.idmz.tachtler.net java[12118]: Nov 26, 2018 12:08:43...
+Nov 26 12:08:43 server70.idmz.tachtler.net java[12118]: INFO: [MilterGatewayM...
+Hint: Some lines were ellipsized, use -l to show in full.
+```
+
+The following query shows on which IPv4 address and port the listener is listening:
+
+```
+# netstat -tulpen | grep java
+tcp   0   0 192.168.0.70:10099      0.0.0.0:*          LISTEN      0          56485375   12118/java
+```
+
+* _The listening on the IPv4 address_ `192.168.0.70` _and port_ `10099''` _was configured here._
