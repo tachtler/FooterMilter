@@ -9,6 +9,6 @@ The following DokuWiki contains detailed instructions for installation and confi
 ## Installation and Configuration
 The description of the installation and configuration of **FooterMilter** is divided into the following parts sections:
 
-   [Prerequisites]
 
-###Prerequisites
+
+### Prerequisites
