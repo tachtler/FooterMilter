@@ -24,7 +24,7 @@ Under the following link, you can download the executable **Java** - `FooterMilt
 ### Installation
 To install the **FooterMilter and the required dependencies as a package**, the following instructions must be followed:
 
-:exclamation: **Note** - The FooterMilter and its required dependencies are installed in the following example in the 
+:exclamation: **Note** - The FooterMilter and its required dependencies are installed in the following **example** in the 
  * `/opt/FooterMilter`
  
 directory.
@@ -32,3 +32,7 @@ directory.
 Download the **FooterMilter and the required dependencies as a package** using following command into the `/tmp` directory:
 
 ` # wget -P /tmp https://github.com/tachtler/FooterMilter/archive/master.zip`
+
+After downloading the **FooterMilter archive** into the `/tmp` directory, you can now **switch to** the `/tmp` **directory** using the following command:
+
+`# cd /tmp`
