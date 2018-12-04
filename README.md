@@ -28,3 +28,7 @@ To install the **FooterMilter and the required dependencies as a package**, the 
  * `/opt/FooterMilter`
  
 directory.
+
+Download the **FooterMilter and the required dependencies as a package** using following command into the `/tmp` directory:
+
+` # wget -P /tmp https://github.com/tachtler/FooterMilter/archive/master.zip`
