@@ -6,9 +6,7 @@
 package net.tachtler.jmilter.FooterMilter;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -23,21 +21,17 @@ import java.util.Map.Entry;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.james.mime4j.MimeException;
-import org.apache.james.mime4j.codec.EncoderUtil;
 import org.apache.james.mime4j.dom.BinaryBody;
 import org.apache.james.mime4j.dom.Body;
 import org.apache.james.mime4j.dom.Entity;
 import org.apache.james.mime4j.dom.Message;
 import org.apache.james.mime4j.dom.MessageBuilder;
 import org.apache.james.mime4j.dom.Multipart;
-import org.apache.james.mime4j.dom.SingleBody;
 import org.apache.james.mime4j.dom.TextBody;
 import org.apache.james.mime4j.dom.field.ContentTypeField;
 import org.apache.james.mime4j.dom.field.FieldName;
-import org.apache.james.mime4j.io.InputStreams;
 import org.apache.james.mime4j.message.DefaultMessageBuilder;
 import org.apache.james.mime4j.message.MessageImpl;
 import org.apache.logging.log4j.LogManager;
@@ -51,10 +45,6 @@ import org.nightcode.milter.command.CommandProcessor;
 import org.nightcode.milter.net.MilterPacket;
 import org.nightcode.milter.util.Actions;
 import org.nightcode.milter.util.ProtocolSteps;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.handler.codec.base64.Base64;
 
 /*******************************************************************************
  * JMilter Handler for handling connections from an MTA to add a footer.
@@ -104,8 +94,6 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	private ContentTypeField contentTypeField = null;
 
 	private FooterMilterInitBean argsBean = new FooterMilterInitBean(null, 0, null, null, null, null);
-
-	private String entityTextBody = null;
 
 	byte[] bodyModified = null;
 
@@ -776,60 +764,59 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	}
 
 	/**
-	 * Check if the from email address is available inside the mapText or mapHtml.
-	 * If true, continue adding a footer by setting the mailFrom variable, else
-	 * check if @domain.tld was found inside the mapText or mapHtml. If true,
-	 * continue adding a footer by setting the mailFrom variable to @domain.tld.
-	 * Else, do nothing, by setting the result variable to false.
+	 * There are three possibilities to determine, if a given mail_addr from envfrom
+	 * MILTER step was inside the footermilter.ini configuration file and with that
+	 * a footer could be set.
+	 * 
+	 * First possibility, the given complete (localpart@domain.tld) mail_addr from
+	 * envfrom MILTER step was direct inside the specified Map (mapText or mapHtml).
+	 * If so, mailFrom was already set.
+	 * 
+	 * Second possibility, ONLY the domain part (@domain.tld) including the @-Char
+	 * from the mail_addr from envfrom MILTER step was found in the specified map
+	 * (mapText or mapHtml). If so, mailFrom was set to @domain.tld from mail_addr.
+	 * 
+	 * Third possibility, a iteration over the whole specified map (mapText or
+	 * mapHtml) and comparing ONLY the (domain.tld) excluding the @-Char from the
+	 * mail_addr from envfrom MILTER step was found in the specified map (mapText or
+	 * mapHtml). If so, mailFrom was set to @domain.tld from mail_addr ignoring any
+	 * sub-domain parts of the given mail_addr too.
 	 * 
 	 * @param context
 	 * @return Boolean
 	 */
 	private void isFooterAvailable(MilterContext context) {
 
+		/*
+		 * Initialize the mailFrom with the mail_addr from envfrom MILTER step and set
+		 * the footerAvailiableResult with false as "standard" values.
+		 */
+		mailFrom = context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString();
 		footerAvailableResult = false;
 
-		if (argsBean.getMapText()
-				.containsKey(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString())
-				|| argsBean.getMapHtml()
-						.containsKey(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString())) {
+		log.debug("*mailFrom                        (init) : " + mailFrom);
+		log.debug("*footerAvailableResult           (init) : " + footerAvailableResult);
 
-			mailFrom = context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString();
-
+		if (argsBean.getMapText().containsKey(mailFrom) || argsBean.getMapHtml().containsKey(mailFrom)) {
 			footerAvailableResult = true;
 		} else {
 
 			/*
-			 * To avoid java.lang.IndexOutOfBoundsException, check if the char @ exists
+			 * To avoid java.lang.IndexOutOfBoundsException, check if the @ char exists
 			 * inside the mail_addr.
 			 */
-			if (context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString().indexOf("@") >= 0) {
-				if (argsBean.getMapText()
-						.containsKey(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString()
-								.substring(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString()
-										.indexOf("@")))
-						|| argsBean.getMapHtml()
-								.containsKey(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}")
-										.toString().substring(context.getMacros(CommandProcessor.SMFIC_MAIL)
-												.get("{mail_addr}").toString().indexOf("@")))) {
-
-					context.getMacros(CommandProcessor.SMFIC_MAIL).put("{mail_addr}",
-							context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString()
-									.substring(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}")
-											.toString().indexOf("@")));
-
-					mailFrom = context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString().substring(
-							context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString().indexOf("@"));
-
+			if (mailFrom.indexOf("@") >= 0) {
+				if (argsBean.getMapText().containsKey(mailFrom.substring(mailFrom.indexOf("@")))
+						|| argsBean.getMapHtml().containsKey(mailFrom.substring(mailFrom.indexOf("@")))) {
+					mailFrom = mailFrom.substring(mailFrom.indexOf("@"));
 					footerAvailableResult = true;
 				} else {
 
 					/*
-					 * To avoid java.lang.IndexOutOfBoundsException, check if the char @ exists
+					 * To avoid java.lang.IndexOutOfBoundsException, check if the @ char exists
 					 * inside the mail_addr.
 					 */
-					if (context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString()
-							.indexOf("@") >= 0) {
+					if (mailFrom.indexOf("@") >= 0) {
 
 						/*
 						 * Iterate over the mapText, and if a from address entry will be a part of the
@@ -837,17 +824,13 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 						 */
 						Iterator<Entry<String, String>> iteratorMapText = argsBean.getMapText().entrySet().iterator();
 						while (iteratorMapText.hasNext()) {
-
 							Map.Entry<String, String> pair = (Map.Entry<String, String>) iteratorMapText.next();
-							if (context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString()
-									.substring(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}")
-											.toString().indexOf("@") + 1)
+							if (mailFrom.substring(mailFrom.indexOf("@") + 1)
 									.contains(pair.getKey().substring(pair.getKey().indexOf("@") + 1))) {
 								mailFrom = pair.getKey();
 								footerAvailableResult = true;
 								break;
 							}
-
 						}
 
 						/*
@@ -857,15 +840,12 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 						Iterator<Entry<String, String>> iteratorMapHtml = argsBean.getMapHtml().entrySet().iterator();
 						while (iteratorMapHtml.hasNext()) {
 							Map.Entry<String, String> pair = (Map.Entry<String, String>) iteratorMapHtml.next();
-							if (context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString()
-									.substring(context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}")
-											.toString().indexOf("@") + 1)
+							if (mailFrom.substring(mailFrom.indexOf("@") + 1)
 									.contains(pair.getKey().substring(pair.getKey().indexOf("@") + 1))) {
 								mailFrom = pair.getKey();
 								footerAvailableResult = true;
 								break;
 							}
-
 						}
 
 					}
@@ -874,232 +854,14 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 			}
 		}
 
-		log.debug("*mailFrom                               : " + mailFrom);
+		log.debug("*mailFrom                        (done) : " + mailFrom);
+		log.debug("*footerAvailableResult           (done) : " + footerAvailableResult);
 
 	}
 
 	/**
-	 * Create a "Quoted Printable" string.
-	 * 
-	 * @param entity
-	 * @param footer
-	 * @return String
-	 */
-	private String createQuotedPrintable(String string) {
-		InputStream inputStreamQuotedPrintable = InputStreams.create(string, StandardCharsets.UTF_8);
-		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-
-		try {
-			EncoderUtil.encodeQBinary(inputStreamQuotedPrintable, byteArrayOutputStream);
-		} catch (IOException eIOException) {
-			log.error(
-					"***** Program stop, because FooterMilter detects a runtime error! ***** (For more details, see error messages and caused by below).");
-			log.error("IOException                             : " + eIOException);
-			log.error(ExceptionUtils.getStackTrace(eIOException));
-		}
-
-		return new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
-	}
-
-	/**
-	 * Convert from Entity part/message.getBody() to String.
-	 * 
-	 * @param entity
-	 * @return String
-	 */
-	private String getTextBody(Entity entity) {
-		TextBody textBody = (TextBody) entity.getBody();
-		return getBody(entity, textBody);
-	}
-
-	/**
-	 * Convert from Entity part/message.getBody() to String.
-	 * 
-	 * @param part
-	 * @return String
-	 */
-	private String getBinaryBody(Entity entity) {
-		BinaryBody binaryBody = (BinaryBody) entity.getBody();
-		return getBody(entity, binaryBody);
-	}
-
-	/**
-	 * Convert from Object (Body) while using the InputStream reader to String.
-	 * Consider the Content-Type while encoding as well.
-	 * 
-	 * @param entity
-	 * @param body
-	 * @return String
-	 */
-	private String getBody(Entity entity, Body body) {
-		String bodyString = null;
-		try {
-			InputStream inputStream = ((SingleBody) body).getInputStream();
-			byte[] bytes = IOUtils.toByteArray(inputStream);
-
-			if (entity.getContentTransferEncoding().equalsIgnoreCase("base64")) {
-				ByteBuf byteBuf = Unpooled.buffer(bytes.length);
-				byteBuf.writeBytes(bytes);
-				bodyString = Base64.encode(byteBuf, true).toString(StandardCharsets.UTF_8);
-			} else if (entity.getContentTransferEncoding().equalsIgnoreCase("quoted-printable")) {
-				InputStream inputStreamQuotedPrintable = InputStreams.create(bytes);
-				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-				EncoderUtil.encodeQBinary(inputStreamQuotedPrintable, byteArrayOutputStream);
-				bodyString = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
-			} else {
-				bodyString = new String(bytes);
-			}
-
-		} catch (IOException eIOException) {
-			log.error(
-					"***** Program stop, because FooterMilter detects a runtime error! ***** (For more details, see error messages and caused by below).");
-			log.error("IOException                             : " + eIOException);
-			log.error(ExceptionUtils.getStackTrace(eIOException));
-		}
-
-		log.debug("getObjectBody <- (Start at next line) -> : " + System.lineSeparator() + bodyString);
-
-		return bodyString;
-	}
-
-	/**
-	 * Add a text/plain footer to the bodyContent, BUT only if it's NOT
-	 * "Content-Disposition: attachment;".
-	 * 
-	 * @param part
-	 */
-	private void addTextWithFooter(Entity entity) {
-		bodyContent.append(getTextBody(entity));
-
-		log.debug("*entity.getDispositionType()            : " + entity.getDispositionType());
-		log.debug("*entity.getContentTransferEncoding()    : " + entity.getContentTransferEncoding());
-
-		if (null != entity.getDispositionType()) {
-			if (!entity.getDispositionType().equalsIgnoreCase("attachment")) {
-				if (null != entity.getContentTransferEncoding()) {
-					if (entity.getContentTransferEncoding().equalsIgnoreCase("quoted-printable")) {
-						bodyContent.append(createQuotedPrintable(argsBean.getMapText().get(mailFrom)));
-					} else {
-						bodyContent.append(argsBean.getMapText().get(mailFrom));
-					}
-				} else {
-					bodyContent.append(argsBean.getMapText().get(mailFrom));
-				}
-			}
-		} else {
-			if (null != entity.getContentTransferEncoding()) {
-				if (entity.getContentTransferEncoding().equalsIgnoreCase("quoted-printable")) {
-					bodyContent.append(createQuotedPrintable(argsBean.getMapText().get(mailFrom)));
-				} else {
-					bodyContent.append(argsBean.getMapText().get(mailFrom));
-				}
-			} else {
-				bodyContent.append(argsBean.getMapText().get(mailFrom));
-			}
-		}
-
-		bodyContent.append(System.lineSeparator());
-
-		log.debug("Content-Type: text/plain                : ");
-	}
-
-	/**
-	 * Add a text/html footer to the body content, if the is NOT
-	 * "Content-Disposition: attachment;".
-	 * 
-	 * @param part
-	 */
-	private void addHtmlWithFooter(Entity entity) {
-
-		log.debug("*entity.getDispositionType()            : " + entity.getDispositionType());
-		log.debug("*entity.getContentTransferEncoding()    : " + entity.getContentTransferEncoding());
-
-		/*
-		 * Check if a well formed HTML content will be found. If it's true, customize
-		 * the well formed HTML content. If it's false, add the HTML content at the end
-		 * of the multipart part.
-		 */
-		entityTextBody = getTextBody(entity);
-
-		if (entityTextBody.indexOf("</body>") != -1) {
-			String[] splitString = entityTextBody.split("</body>");
-			bodyContent.append(splitString[0].toString());
-
-			if (null != entity.getDispositionType()) {
-				if (!entity.getDispositionType().equalsIgnoreCase("attachment")) {
-					if (null != entity.getContentTransferEncoding()) {
-						if (entity.getContentTransferEncoding().equalsIgnoreCase("quoted-printable")) {
-							bodyContent.append(createQuotedPrintable(argsBean.getMapHtml().get(mailFrom)));
-						} else {
-							bodyContent.append(argsBean.getMapHtml().get(mailFrom));
-						}
-					} else {
-						bodyContent.append(argsBean.getMapHtml().get(mailFrom));
-					}
-				}
-			} else {
-				if (null != entity.getContentTransferEncoding()) {
-					if (entity.getContentTransferEncoding().equalsIgnoreCase("quoted-printable")) {
-						bodyContent.append(createQuotedPrintable(argsBean.getMapHtml().get(mailFrom)));
-					} else {
-						bodyContent.append(argsBean.getMapHtml().get(mailFrom));
-					}
-				} else {
-					bodyContent.append(argsBean.getMapHtml().get(mailFrom));
-				}
-			}
-
-			bodyContent.append("</body>");
-			bodyContent.append(splitString[1].toString());
-
-			log.debug("Content-Type: text/html formatted       : ");
-		} else {
-			bodyContent.append(entityTextBody);
-
-			if (null != entity.getDispositionType()) {
-				if (!entity.getDispositionType().equalsIgnoreCase("attachment")) {
-					if (null != entity.getContentTransferEncoding()) {
-						if (entity.getContentTransferEncoding().equalsIgnoreCase("quoted-printable")) {
-							bodyContent.append(createQuotedPrintable(argsBean.getMapHtml().get(mailFrom)));
-						} else {
-							bodyContent.append(argsBean.getMapHtml().get(mailFrom));
-						}
-					} else {
-						bodyContent.append(argsBean.getMapHtml().get(mailFrom));
-					}
-				}
-			} else {
-				if (null != entity.getContentTransferEncoding()) {
-					if (entity.getContentTransferEncoding().equalsIgnoreCase("quoted-printable")) {
-						bodyContent.append(createQuotedPrintable(argsBean.getMapHtml().get(mailFrom)));
-					} else {
-						bodyContent.append(argsBean.getMapHtml().get(mailFrom));
-					}
-				} else {
-					bodyContent.append(argsBean.getMapHtml().get(mailFrom));
-				}
-			}
-
-			log.debug("Content-Type: text/html unformatted     : ");
-		}
-
-		log.debug("Content-Type: text/html                 : ");
-
-	}
-
-	/**
-	 * Add a binary content to the body content without any modification.
-	 * 
-	 * @param part
-	 */
-	private void addBinaryContent(Entity entity) {
-		bodyContent.append(getBinaryBody(entity));
-		bodyContent.append(System.lineSeparator());
-	}
-
-	/**
-	 * Generate the modified Body from multipart ord single message with the
-	 * different part typs like text/plain, text/html and binary parts if detected.
+	 * Generate the modified Body from multipart or single message with the
+	 * different part types like text/plain, text/html and binary parts.
 	 */
 	private void generateModifiedBody() {
 
@@ -1122,50 +884,48 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		}
 
 		/*
-		 * Start creating the new body.
+		 * Start creating the modified body while iterating over all parts of the
+		 * message.
 		 */
-		createBody(message);
+		createModifiedBody(message);
 
 	}
 
 	/**
-	 * Creates the body parts from a given MIME entity (either a Message or a
-	 * BodyPart).
-	 * 
+	 * Creates the body parts from a given MIME entity (either a Message or a Part)
+	 * and add them to the bodyContent String. To iterate over the whole message, if
+	 * necessary, the code is calling itself.
 	 */
-	private void createBody(Entity entity) {
+	private void createModifiedBody(Entity entity) {
 
 		body = entity.getBody();
 
 		if (body instanceof Multipart) {
-			createBody((Multipart) body);
+			createModifiedMultipartBody((Multipart) body);
 		} else if (body instanceof MessageImpl) {
-			createBody((MessageImpl) body);
+			createModifiedBody((MessageImpl) body);
 		} else if (body instanceof TextBody) {
-
-			/*
-			 * Determine the multipart entity content type and insert dependently the
-			 * content type of the footer.
-			 */
 			if (entity.getMimeType().equalsIgnoreCase("text/plain")) {
-				addTextWithFooter(entity);
+				bodyContent.append(
+						FooterMilterUtilities.getTextContentWithFooter(entity, argsBean.getMapText().get(mailFrom)));
 			} else if (entity.getMimeType().equalsIgnoreCase("text/html")) {
-				addHtmlWithFooter(entity);
+				bodyContent.append(
+						FooterMilterUtilities.getHtmlContentWithFooter(entity, argsBean.getMapHtml().get(mailFrom)));
 			}
-
 		} else if (body instanceof BinaryBody) {
-			addBinaryContent(entity);
+			bodyContent.append(FooterMilterUtilities.getBinaryContent(entity));
 		}
 
 	}
 
 	/**
 	 * Create a body part form a given multipart body. Add the "preamble", all body
-	 * parts and the "epilogue" to the bodyModified.
+	 * parts the with their "boundary" and the "epilogue" to the bodyModified
+	 * String.
 	 * 
 	 * @param multipart
 	 */
-	private void createBody(Multipart multipart) {
+	private void createModifiedMultipartBody(Multipart multipart) {
 
 		/*
 		 * If available, add "preamble" before the multipart messages.
@@ -1195,7 +955,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 			bodyContent.append(System.lineSeparator());
 
 			/*
-			 * Add unmodified header.
+			 * Add unmodified body part header.
 			 */
 			bodyContent.append(part.getHeader());
 			bodyContent.append(System.lineSeparator());
@@ -1203,7 +963,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 			/*
 			 * Add the recommended part from multipart to the bodyContent.
 			 */
-			createBody(part);
+			createModifiedBody(part);
 		}
 
 		/*
@@ -1232,7 +992,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	}
 
 	/**
-	 * Initialize global variables.
+	 * Initialize global defined and used variables.
 	 */
 	private void initGlobalVariables() {
 
@@ -1254,8 +1014,6 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 			log.error("FooterMilterException                   : " + eFooterMilterException);
 			log.error(ExceptionUtils.getStackTrace(eFooterMilterException));
 		}
-
-		entityTextBody = null;
 
 		bodyModified = null;
 
