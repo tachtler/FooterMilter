@@ -43,9 +43,21 @@ Afterwards you can **unzip** the previously downloaded file `/tmp/master.zip` wi
 
 which creates the following **directory structure**, which can be listed with the following command:
 
-`# ls -l /tmp/FooterMilter-master/ `
-
+```
+# ls -l /tmp/FooterMilter-master/
+total 56
+-rw-r--r-- 1 root root  5741 Dec  4 07:00 footermilter.ini
+-rw-r--r-- 1 root root 18871 Dec  4 07:00 FooterMilter.jar
+-rw-r--r-- 1 root root   288 Dec  4 07:00 footermilter.service
+drwxr-xr-x 2 root root  4096 Dec  4 07:00 lib
+-rw-r--r-- 1 root root 11357 Dec  4 07:00 LICENSE
+-rw-r--r-- 1 root root  1676 Dec  4 07:00 log4j2.xml
+drwxr-xr-x 2 root root    24 Dec  4 07:00 META-INF
+drwxr-xr-x 3 root root    21 Dec  4 07:00 net
+-rw-r--r-- 1 root root   864 Dec  4 07:00 README.md
+```
 Whether the downloaded **Java** - `FooterMilter.jar` archive file is **executable** can be **tested with the following command** and should produce an output like the following one:
+
 ```
 # java -jar /tmp/FooterMilter-master/FooterMilter.jar -h
 usage: /path/to/java -jar /path/to/FooterMilter.jar
