@@ -6,5 +6,9 @@ The following DokuWiki contains detailed instructions for installation and confi
 
 [Tachtler's DokuWiki - Postfix CentOS 7 - FooterMilter einbinden (footermilter)](https://dokuwiki.tachtler.net/doku.php?id=tachtler:postfix_centos_7_-_footermilter_einsetzen_footermilter)
 
-## Coming soon...
-Detailed **description of the installation and configuration in English language**, here on GitHub.
+## Installation and Configuration
+The description of the installation and configuration of **FooterMilter** is divided into the following parts sections:
+
+   [Prerequisites]
+
+###Prerequisites
