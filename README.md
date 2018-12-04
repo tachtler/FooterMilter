@@ -20,7 +20,9 @@ The description of the installation and configuration of **FooterMilter** is div
         - [Section: [service]](README.md#section-service)
         - [Section: [footer]](README.md#section-footer)
  5. [footerMilter: First Start](README.md#footermilter-first-start)
- 6. 
+ 6. [Postfix Configuration](README.md#postfix-configuration)
+     - [/etc/postfix/main.cf](README.md#etcpostfixmaincf)
+     - [/etc/postfix/master.cf](README.md#etcpostfixmastercf)
 
 ### Prerequisites
 There is only one dependency for the execution of FooterMilter
@@ -533,4 +535,3 @@ smtp      inet  n       -       n       -       -       smtpd
 # FooterMilter
    -o smtpd_milters=${footer_milter}
 ```
-
