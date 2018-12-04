@@ -209,7 +209,7 @@ The following parameters can be set in the section `[server]`:
 
 In the `[footer]` section(s) **multiple configurations** are possible and desired, but please note the following:
 
-  - Each section `[footer]` must begin with the word **footer**.
+  - **Each section** `[footer]` must begin with the word **footer**.
   - **Each section** `[footer]` must have a **unambiguous designation**.
 
 **Examples**:
