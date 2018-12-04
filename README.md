@@ -288,3 +288,164 @@ Footer default\n\
 <span style=\"font-family:monospace; color:#000000\">Footer default</span><br>\n\
 <br\>\n\n
 ```
+
+Finally as an example a **complete configuration file**:
+
+```
+################################################################################
+# JMilter Server for connections from an MTA to add a footer.
+# 
+# JMilter is an Open Source implementation of the Sendmail milter protocol, for
+# implementing milters in Java that can interface with the Sendmail or Postfix
+# MTA.
+# 
+# Java implementation of the Sendmail Milter protocol based on the project of
+# org.nightcode.jmilter from dmitry@nightcode.org.
+# 
+# @author Klaus Tachtler. <klaus@tachtler.net>
+# 
+#         Homepage : http://www.tachtler.net
+# 
+#         Licensed under the Apache License, Version 2.0 (the "License"); you
+#         may not use this file except in compliance with the License. You may
+#         obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#         Unless required by applicable law or agreed to in writing, software
+#         distributed under the License is distributed on an "AS IS" BASIS,
+#         WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+#         implied. See the License for the specific language governing
+#         permissions and limitations under the License..
+# 
+# Copyright (c) 2018 Klaus Tachtler. All Rights Reserved.
+# Klaus Tachtler. <klaus@tachtler.net>
+# http://www.tachtler.net
+#
+################################################################################
+ 
+ 
+################################################################################ 
+# [server] section - Start configuration for the server.
+################################################################################
+
+[server]
+
+# IPv4 address or hostname to listen.
+listen = 127.0.0.1
+
+# Port to listen.
+port = 10099
+
+# Enable or disable TCP-Logging by setting the following parameter:
+# true|false|yes|no|y|n (case insensitive)
+#
+# !IMPORTANT: Please set to false, true enables ONLY TCP-Logging see:
+#             https://github.com/nightcode/jmilter
+#  
+#             If you want do DEBUG the FooterMilter.jar itself, please use the
+#             parameter --> -d <-- as startup parameter as well!  
+#
+logging = false
+
+# Set TCP-Logging Log-Level to INFO, WARN, ERROR, TRACE or DEBUG.
+# Only relevant if logging = true
+#
+# !IMPORTANT: Please set to INFO to see the TCP-Logging, DEBUG will produce  
+#             NO output. This is only for TCP-Logging see: 
+#             https://github.com/nightcode/jmilter
+#
+loglevel = INFO
+
+
+################################################################################ 
+# [footer] section - Configuration of the footers to be used.
+################################################################################
+#
+# !IMPORTANT: Every section  
+#             a.) must start with the word: footer
+#             b.) must have an unique name
+#
+# EXAMPLES:   [footer: default], [footer: localpart@domain.tld], [footer: 001]
+#
+# ==============================================================================
+#             
+# from field: If inside a [footer]-section the from field was defined with the
+#             following syntax: @domain.tld -> NO localpart! <-
+#             this will be used as DEFAULT for the domain, if no email address
+#             will match!
+#
+# EXAMPLE:    from = @example.com
+#
+# ==============================================================================
+#             
+# text/html : For a better configuration view for the text and html fields, it's
+#             possible to use a single \ (backslash) at the end of the line!
+#
+# EXAMPLE:    text = -- \
+#             first word \
+#             second word \
+#             last word.
+#        
+# SAME AS:    text = -- first word second word last word.
+#
+# ==============================================================================
+#             
+# escape's  : Some escape sequences can be used, for more well formatted output!
+#             Escape sequences description:
+#                           
+#             \t     Insert a tab in the text at this point.
+#             \b     Insert a backspace in the text at this point.
+#             \n     Insert a newline in the text at this point.
+#             \r     Insert a carriage return in the text at this point.
+#             \f     Insert a formfeed in the text at this point.
+#             \'     Insert a single quote character in the text at this point.
+#             \"     Insert a double quote character in the text at this point.
+#             \\     Insert a backslash character in the text at this point.
+#
+################################################################################
+
+[footer: @example.com]
+
+# Enable this footer.
+enabled = true
+
+# Email "mail from:" for generating the footer.
+from = @example.com
+
+# Footer for text/plain.
+text = -- \
+\n\
+\n\
+--------------------------------------------\n\
+Footer default\n\
+--------------------------------------------\n\
+\n
+
+# Footer for text/html.
+html = <br\>\n\
+<br\>\n\
+<span style=\"font-family:monospace; color:#000000\">--&nbsp;</span><br>\n\
+<br\>\n\
+<span style=\"font-family:monospace; color:#000000\">Footer default</span><br>\n\
+<br\>\n\n
+
+################################################################################
+
+[footer: user@example.com]
+
+# Enable this footer.
+enabled = true
+
+# Email "mail from:" for generating the footer.
+from = user@example.com
+
+# Footer for text/plain.
+text = -- \n\n--------------------------------------------\nFooter user\n--------------------------------------------\n\n
+
+# Footer for text/html.
+html = <br\>\n<br\>\n<span style=\"font-family:monospace; color:#000000\">--&nbsp;</span><br>\n<br\>\n<span style=\"font-family:monospace; color:#000000\">Footer user</span><br>\n<br\>\n\n
+
+################################################################################
+```
+
