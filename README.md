@@ -13,7 +13,8 @@ The description of the installation and configuration of **FooterMilter** is div
  2. [Download](README.md#download)
  3. [Installation](README.md#installation)
  4. [Configuration](README.md#configuration)
-
+    - Test
+    
 ### Prerequisites
 There is only one dependency for the execution of FooterMilter
  * Running **Java** installation e.g. [OpenJDK](https://openjdk.java.net/) **from version 1.8** or higher
@@ -104,3 +105,44 @@ must have the file
   * `footermilter.service`
 
 **also be adapted !!!**
+
+#### footermilter.service: Set up service / Deamon start
+
+Before you start the configuration of the contents, you can use the **Start/Stopp/Restart-Script** included in the **Package** with the designation
+
+  * `footermilter.service`
+
+the automatic start/stop/restart of the **FooterMilter** under **systemd**.
+
+To do this, first copy the **Start/Stopp/Restart script** with the following command to the directory
+ 
+  * `/usr/lib/systemd/system`
+  
+can be moved:
+
+`# mv /opt/footerMilter/footermilter.service /usr/lib/system/system/footermilter.service`
+
+Then the following command must be used to announce the new script to the **systemd**:
+
+`# systemctl daemon-reload`
+ 
+In order to have **FooterMilter**, which runs as `service/deamon` as **background process**, available even after a restart of the server, the `service/deamon` should be started with the server, which can be realized with the following command:
+
+```
+# systemctl enable footermilter.service`
+Created symlink from /etc/systemd/system/multi-user.target.wants/footermilter.service to /usr/lib/systemd/system/footermilter.service.
+```
+
+A check whether the `footermilter.service` service is really started when the server is restarted can be done with the following command and should display a message as shown below:
+
+```
+# systemctl list-unit-files --type=service | grep -e footermilter.service
+footermilter.service enabled
+```
+
+or
+
+```
+# systemctl is-enabled footermilter.service
+enabled
+```
