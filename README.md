@@ -251,4 +251,40 @@ For **better readability** during the configuration of the parameters `text` and
 **at the END of a line**.
 
 In addition, subsequent **"Escape" sequences** can be used to increase readability when configuring the respective **Footer**.
- 
+
+
+| Escape sequence | Description                                                     |
+| --------------- | --------------------------------------------------------------- |
+| `\t`            | Insert a tabulator into the text at this point.                 |
+| `\b`            | Add a "backspace" to the text at this point.                    |
+| `\n`            | Add a new line to the text at this point.                       |
+| `\r`            | Add a carriage return code to the text at this point.           |
+| `\f`            | Add a form feed to the text at this point.                      |
+| `\'`            | Insert a single quotation mark into the text at this point.     |
+| `\"`            | Insert a double quotation mark in the text at this point.       |
+| `\\`            | Add a "backslash" character to the text at this point.          |
+
+**Examples**:
+
+**text/plain**
+
+```
+-- \
+\n\
+\n\
+--------------------------------------------\n\
+Footer default\n\
+--------------------------------------------\n\
+\n
+```
+
+**text/html**
+
+```
+<br\>\n\
+<br\>\n\
+<span style=\"font-family:monospace; color:#000000\">--&nbsp;</span><br>\n\
+<br\>\n\
+<span style=\"font-family:monospace; color:#000000\">Footer default</span><br>\n\
+<br\>\n\n
+```
