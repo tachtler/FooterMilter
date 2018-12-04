@@ -74,3 +74,14 @@ Copyright (c) 2018 Klaus Tachtler, <klaus@tachtler.net>.
 All Rights Reserved.
 Version 1.0.
 ```
+
+:exclamation: **IMPORTANT** - The **Java** - `FooterMilter.jar` archive file can **ONLY be executed** if the other files are also present in the described directory structure, **especially the directory** `lib` **and it's content, must be in the same directory !**
+
+:exclamation: **NOTE** - The directory `/tmp/FooterMilter-master/` can, of course, be
+
+ * **renamed** or also
+ * be **moved**
+
+**as long as the directory structure** within which the **Java** - `FooterMilter.jar` archive file is located **is completely preserved !** 
+
+### Configuration
