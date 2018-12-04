@@ -160,4 +160,92 @@ By **default**, the log data is written to:
 These and other settings can be made in this file on the subject of logging. See also the external link:
   * [Log4j - Configuration Log4j 2 - Apache Log4j 2](https://logging.apache.org/log4j/2.x/manual/configuration.html)
  
+#### Main configuration file: footermilter.ini
+
+:exclamation: **IMPORTANT** - ** The default configuration file is located under** `/opt/FooterMilter/footermilter.ini`
+
+:exclamation: **IMPORTANT**
+
+  - If you want to use a **target directory other than** `/opt`,
+  - or the **directory name is NOT** `FooterMilter` **to be named,**
+
+must have the file
+
+  * `footermilter.service`
+
+**also be adapted !!!**
+
+The main configuration file of the **FooterMilter** - **''footermilter.ini''** includes all settings for
+  * the start and its **start parameters** - section `[server]`
+  * the configuration of the **footer** section to be used `[footer]`
+
+#### Section: [service]
+
+The following parameters can be set in the section `[server]`:
+
+| Parameter    | Default value | Description                                                                    |
+| ------------ | ------------- | ------------------------------------------------------------------------------ |
+| `listen`    | `127.0.0.1`  | IPv4-address or hostname where the service/daemon should be reachable          |
+| `port`      | `10099`       | Port where the service/daemon should be reachable                              |
+| `logging`   | `false`       | Activation of TCP logging from [JMilter](https://github.com/nightcode/jmilter) |
+| `loglevel`  | `INFO`        | Log-Level for TCP-Logging of [JMilter](https://github.com/nightcode/jmilter) |
+
+:exclamation: **NOTE** - **Enabling logging activates a TCP log which is very talkative!**
+
+:exclamation: **NOTE** - **This should only be activated in case of connection problems, as the TCP connection data is output here.**
+
+:exclamation: **NOTE** - **The log level should NOT be set to** `DEBUG`, **because NO log data is output here. This only happens with the other possible log levels such as** `INFO` **!**
+
+:exclamation: **NOTE** - **If** `DEBUG` **logging is desired for troubleshooting purposes, this can be achieved with the parameter** `-d` **in the start script or with a manual start.**
+
+#### Section: [footer]
+
+In the `[footer]` section(s) **multiple configurations** are possible and desired, but please note the following:
+
+  - Each section `[footer]` must begin with the word **footer**.
+  - **Each section** `[footer]` must have a **unambiguous designation**.
+
+**Examples**:
+
+  * `[footer: default]`
+  * `[localpart@domain.tld]`
+  * `[footer 001]`
+  * `[footer-default]`
+  * `[footer]`
+
+The following parameters can be set in the section(s) `[footer]`:
+
+| Parameter   | Default value                                 | Description                                                       |
+| ------------| --------------------------------------------- | ----------------------------------------------------------------- |
+| `enabled`  | `true`                                       | Should this `[footer]` section be active                         |
+| `from`      | `user@example.com` **or** `@example.com` | **E-Mail**-Address **or** **Domain** with **\'@\'**-sign in front  | 
+| `text`      | `--`                                         | Footer for the `Content-Type` - `text/plain`                   |
+| `html`      | `--`                                         | Footer for the `Content-Type` - `text/html`                    |
+
+The following **special feature** applies to the
+ 
+ * **Parameter:** `from`
+
+If `@Domain.tld` is entered here instead of a complete e-mail address, this **Footer** will be attached if no e-mail address applies to other **Footers**. 
+
+:exclamation: **NOTE** - `@Domain.tld` is the **standard footer for this domain!**
+
+**Examples**:
+
+  * `user@example.com` - e-mail address
+  * `@example.com` - Default for this domain if no email address matches.
+  * `@sub.example.com` - Default for this sub-domain if no email address matches.
+
+The following **special feature** applies to the
+
+ * **Parameter:** `text` and
+ * **Parameter:** `html`
+
+For **better readability** during the configuration of the parameters `text` and `html`, e.g. a
+
+ * `\` **(backslash)**
+ 
+**at the END of a line**.
+
+In addition, subsequent **"Escape" sequences** can be used to increase readability when configuring the respective **Footer**.
  
