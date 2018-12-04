@@ -13,8 +13,9 @@ The description of the installation and configuration of **FooterMilter** is div
  2. [Download](README.md#download)
  3. [Installation](README.md#installation)
  4. [Configuration](README.md#configuration)
-    - Test
-    
+     - [Destination directory: /opt](README.md#destination-directory-opt)
+     - [footermilter.service: Set up service / Deamon start](README.md#footermilterservice-set-up-service--deamon-start)
+
 ### Prerequisites
 There is only one dependency for the execution of FooterMilter
  * Running **Java** installation e.g. [OpenJDK](https://openjdk.java.net/) **from version 1.8** or higher
