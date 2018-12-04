@@ -20,6 +20,7 @@ The description of the installation and configuration of **FooterMilter** is div
         - [Section: [service]](README.md#section-service)
         - [Section: [footer]](README.md#section-footer)
  5. [footerMilter: First Start](README.md#footermilter-first-start)
+ 6. 
 
 ### Prerequisites
 There is only one dependency for the execution of FooterMilter
@@ -483,7 +484,7 @@ tcp   0   0 192.168.0.70:10099      0.0.0.0:*          LISTEN      0          56
 
 * _The listening on the IPv4 address_ `192.168.0.70` _and port_ `10099''` _was configured here._
 
-### Postfix Configuration: Postfix
+### Postfix Configuration
 
 The following configurations must be performed as a minimum in order to be able to make [Postfix](http://www.postfix.org/)
 to be able to access the **FooterMilter** `service/daemon`:
@@ -497,7 +498,7 @@ The following change must be made to the [Postfix](http://www.postfix.org/) conf
 
   * `/etc/postfix/main.cf`
 
-(** Relevant excerpt only**):
+( **Relevant excerpt only** ):
 
 ```
 # --------------------------------------------------------------------------------
@@ -515,7 +516,7 @@ The following change must be made to the [Postfix](http://www.postfix.org/) conf
 
   * `/etc/postfix/master.cf`
 
-(** Relevant excerpt only**):
+( **Relevant excerpt only** ):
 
 ```
 #
@@ -532,3 +533,4 @@ smtp      inet  n       -       n       -       -       smtpd
 # FooterMilter
    -o smtpd_milters=${footer_milter}
 ```
+
