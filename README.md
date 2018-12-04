@@ -12,6 +12,7 @@ The description of the installation and configuration of **FooterMilter** is div
  1. [Prerequisites](README.md#prerequisites)
  2. [Download](README.md#download)
  3. [Installation](README.md#installation)
+ 4. [Configuration](README.md#configuration)
 
 ### Prerequisites
 There is only one dependency for the execution of FooterMilter
@@ -85,3 +86,21 @@ Version 1.0.
 **as long as the directory structure** within which the **Java** - `FooterMilter.jar` archive file is located **is completely preserved !** 
 
 ### Configuration
+
+#### Destination directory: /opt 
+
+For file system hygiene, the **complete directory** in which the **FooterMilter** is executed should be moved from the `/tmp` directory to a better location for permanent storage, here: `/opt`. The name should also be changed at the same time, which can be done with the following command:
+
+
+`# mv /tmp/FooterMilter-master /opt/FooterMilter`
+
+:exclamation: **IMPORTANT**
+
+  - If you want to use a **target directory other than** `/opt`,
+  - or the **directory name is NOT** `FooterMilter` **to be named,**
+
+must have the file
+
+  * `footermilter.service`
+
+**also be adapted !!!**
