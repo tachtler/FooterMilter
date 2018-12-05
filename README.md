@@ -489,7 +489,7 @@ tcp   0   0 192.168.0.70:10099      0.0.0.0:*          LISTEN      0          56
 The following configurations must be performed as a minimum in order to be able to make [Postfix](http://www.postfix.org/)
 to be able to access the **FooterMilter** `service/daemon`:
 
-:exclamation: **IMPORTANT** - **Please do not include BEFORE - DKIM - , because otherwise the SIGNATUR will break!**
+:exclamation: **IMPORTANT** - **Please always include BEFORE - DKIM - , because otherwise the SIGNATUR will break!**
 
  
 #### /etc/postfix/main.cf
