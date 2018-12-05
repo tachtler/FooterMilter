@@ -957,10 +957,11 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 			contentTypeField = (ContentTypeField) multipart.getParent().getHeader().getField(FieldName.CONTENT_TYPE);
 
 			/*
-			 * If a signed part was found, STOP changing the content by setting the
-			 * footerAvailableResult to false, because this will break any signatures!
+			 * If a signed or encrypted part was found, STOP changing the content by setting
+			 * the footerAvailableResult to false, because this will break any signatures!
 			 */
-			if (contentTypeField.getMimeType().toLowerCase().contains("signed")) {
+			if (contentTypeField.getMimeType().toLowerCase().contains("signed")
+					|| contentTypeField.getMimeType().toLowerCase().contains("encrypted")) {
 				footerAvailableResult = false;
 
 				log.debug("*contentTypeField.getMimeType()         : " + contentTypeField.getMimeType());
