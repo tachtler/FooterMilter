@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Class-Path: . 
  lib/apache-mime4j-core-0.8.2.jar 
  lib/apache-mime4j-dom-0.8.2.jar 
- lib/apache-mime4j-storage-0.8.2.jar
+ lib/apache-mime4j-storage-0.8.2.jar 
  lib/commons-codec-1.11.jar 
  lib/commons-cli-1.4.jar 
  lib/commons-io-2.4.jar 
