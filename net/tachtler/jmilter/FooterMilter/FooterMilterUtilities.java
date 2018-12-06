@@ -5,20 +5,19 @@
  */
 package net.tachtler.jmilter.FooterMilter;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.codec.EncoderException;
+import org.apache.commons.codec.net.QuotedPrintableCodec;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.james.mime4j.codec.EncoderUtil;
 import org.apache.james.mime4j.dom.BinaryBody;
 import org.apache.james.mime4j.dom.Body;
 import org.apache.james.mime4j.dom.Entity;
 import org.apache.james.mime4j.dom.SingleBody;
 import org.apache.james.mime4j.dom.TextBody;
-import org.apache.james.mime4j.io.InputStreams;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -88,6 +87,7 @@ public class FooterMilterUtilities {
 		stringBuffer.delete(0, stringBuffer.length());
 
 		stringBuffer.append(FooterMilterUtilities.getTextBody(entity));
+		stringBuffer.append(System.lineSeparator());
 
 		log.debug("*entity.getDispositionType()            : " + entity.getDispositionType());
 		log.debug("*entity.getContentTransferEncoding()    : " + entity.getContentTransferEncoding());
@@ -274,7 +274,7 @@ public class FooterMilterUtilities {
 	 * @param body
 	 * @return String
 	 */
-	public static String getBody(Entity entity, Body body) {
+	private static String getBody(Entity entity, Body body) {
 		String bodyString = null;
 		try {
 			InputStream inputStream = ((SingleBody) body).getInputStream();
@@ -285,10 +285,7 @@ public class FooterMilterUtilities {
 				byteBuf.writeBytes(bytes);
 				bodyString = Base64.encode(byteBuf, true).toString(StandardCharsets.UTF_8);
 			} else if (entity.getContentTransferEncoding().equalsIgnoreCase("quoted-printable")) {
-				InputStream inputStreamQuotedPrintable = InputStreams.create(bytes);
-				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-				EncoderUtil.encodeQBinary(inputStreamQuotedPrintable, byteArrayOutputStream);
-				bodyString = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
+				bodyString = createQuotedPrintable(new String(bytes));
 			} else {
 				bodyString = new String(bytes);
 			}
@@ -299,7 +296,7 @@ public class FooterMilterUtilities {
 			log.error(ExceptionUtils.getStackTrace(eIOException));
 		}
 
-		log.debug("bodyString    <- (Start at next line) -> : " + System.lineSeparator() + bodyString);
+		log.debug("*bodyString   <- (Start at next line) -> : " + System.lineSeparator() + bodyString);
 
 		return bodyString;
 	}
@@ -311,20 +308,30 @@ public class FooterMilterUtilities {
 	 * @param string
 	 * @return String
 	 */
-	public static String createQuotedPrintable(String string) {
-		InputStream inputStreamQuotedPrintable = InputStreams.create(string, StandardCharsets.UTF_8);
-		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+	private static String createQuotedPrintable(String string) {
+		StringBuffer quotedStringBuffer = new StringBuffer();
+		String[] stringLines = string.split(System.lineSeparator());
+		QuotedPrintableCodec quotedPrintableCodec = new QuotedPrintableCodec();
 
-		try {
-			EncoderUtil.encodeQBinary(inputStreamQuotedPrintable, byteArrayOutputStream);
-		} catch (IOException eIOException) {
-			log.error(
-					"***** Program stop, because FooterMilter detects a runtime error! ***** (For more details, see error messages and caused by below).");
-			log.error("IOException                             : " + eIOException);
-			log.error(ExceptionUtils.getStackTrace(eIOException));
+		for (String line : stringLines) {
+			line = line.replaceAll("\\r|\\n", "");
+
+			try {
+				quotedStringBuffer.append(quotedPrintableCodec.encode(line));
+				quotedStringBuffer.append(System.lineSeparator());
+			} catch (EncoderException eEncoderException) {
+				log.error(
+						"***** Program stop, because FooterMilter detects a runtime error! ***** (For more details, see error messages and caused by below).");
+				log.error("IOException                             : " + eEncoderException);
+				log.error(ExceptionUtils.getStackTrace(eEncoderException));
+			}
+
 		}
 
-		return new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
+		log.debug(
+				"*quotedStringBuffer (Start at next line) : " + System.lineSeparator() + quotedStringBuffer.toString());
+
+		return quotedStringBuffer.toString();
 	}
 
 }

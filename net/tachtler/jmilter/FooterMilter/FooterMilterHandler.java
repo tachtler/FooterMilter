@@ -558,7 +558,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 			 * the content, because this will break the signature!
 			 */
 			if (footerAvailableResult) {
-
+				
 				/*
 				 * Copy the modified String into the bodyModified byte array.
 				 */
