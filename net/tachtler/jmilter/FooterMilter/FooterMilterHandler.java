@@ -176,11 +176,11 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 
 		try {
 			log.debug("*address.isReachable(timeout)           : " + address.isReachable(timeout));
-		} catch (IOException eIsReachableTimeout) {
-			log.error(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-			log.error("IOException                             : " + eIsReachableTimeout);
-			log.error(ExceptionUtils.getStackTrace(eIsReachableTimeout));
+		} catch (IOException eIOException) {
+			FooterMilterException.InitException(false);
+
+			log.error("Exception: " + "IOException");
+			log.error("Caused by: " + ExceptionUtils.getStackTrace(eIOException));
 		}
 
 		NetworkInterface netif = null;
@@ -228,19 +228,19 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 			}
 
 		} catch (SocketException eSocketException) {
-			log.error(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-			log.error("SocketException                         : " + eSocketException);
-			log.error(ExceptionUtils.getStackTrace(eSocketException));
+			FooterMilterException.InitException(false);
+
+			log.error("Exception: " + "SocketException");
+			log.error("Caused by: " + ExceptionUtils.getStackTrace(eSocketException));
 		}
 
 		try {
 			log.debug("*address.isReachable(netif, ttl, time...: " + address.isReachable(netif, ttl, timeout));
 		} catch (IOException eIOException) {
-			log.error(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-			log.error("IOException                             : " + eIOException);
-			log.error(ExceptionUtils.getStackTrace(eIOException));
+			FooterMilterException.InitException(false);
+
+			log.error("Exception: " + "IOException");
+			log.error("Caused by: " + ExceptionUtils.getStackTrace(eIOException));
 		}
 		log.debug("*address.isSiteLocalAddress()           : " + address.isSiteLocalAddress());
 
@@ -548,7 +548,14 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 			/*
 			 * Generate the modified Body with the necessary footer added.
 			 */
-			generateModifiedBody();
+			try {
+				generateModifiedBody();
+			} catch (FooterMilterException eFooterMilterException) {
+				FooterMilterException.InitException(false);
+
+				log.error("Exception: " + "FooterMilterException");
+				log.error("Caused by: " + ExceptionUtils.getStackTrace(eFooterMilterException));
+			}
 
 			log.debug("*bodyContent.toString()                 : " + bodyContent.toString());
 
@@ -558,7 +565,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 			 * the content, because this will break the signature!
 			 */
 			if (footerAvailableResult) {
-				
+
 				/*
 				 * Copy the modified String into the bodyModified byte array.
 				 */
@@ -873,7 +880,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	 * Generate the modified Body from multipart or single message with the
 	 * different part types like text/plain, text/html and binary parts.
 	 */
-	private void generateModifiedBody() {
+	private void generateModifiedBody() throws FooterMilterException {
 
 		/*
 		 * Generate the message parsing the parseContent with the messageBuilder.
@@ -882,15 +889,9 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 			message = messageBuilder
 					.parseMessage(new ByteArrayInputStream(parseContent.toString().getBytes(StandardCharsets.UTF_8)));
 		} catch (MimeException eMimeException) {
-			log.error(
-					"***** Program stop, because FooterMilter detects a runtime error! ***** (For more details, see error messages and caused by below).");
-			log.error("MimeException                           : " + eMimeException);
-			log.error(ExceptionUtils.getStackTrace(eMimeException));
+			throw new FooterMilterException(false, eMimeException);
 		} catch (IOException eIOException) {
-			log.error(
-					"***** Program stop, because FooterMilter detects a runtime error! ***** (For more details, see error messages and caused by below).");
-			log.error("IOException                             : " + eIOException);
-			log.error(ExceptionUtils.getStackTrace(eIOException));
+			throw new FooterMilterException(false, eIOException);
 		}
 
 		/*
@@ -906,7 +907,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	 * and add them to the bodyContent String. To iterate over the whole message, if
 	 * necessary, the code is calling itself.
 	 */
-	private void createModifiedBody(Entity entity) {
+	private void createModifiedBody(Entity entity) throws FooterMilterException {
 
 		body = entity.getBody();
 
@@ -935,7 +936,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	 * 
 	 * @param multipart
 	 */
-	private void createModifiedMultipartBody(Multipart multipart) {
+	private void createModifiedMultipartBody(Multipart multipart) throws FooterMilterException {
 
 		/*
 		 * If available, add "preamble" before the multipart messages.
@@ -1030,10 +1031,10 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		try {
 			argsBean.init();
 		} catch (FooterMilterException eFooterMilterException) {
-			log.error(
-					"***** Program stop, because FooterMilter detects a runtime error! ***** (For more details, see error messages and caused by below).");
-			log.error("FooterMilterException                   : " + eFooterMilterException);
-			log.error(ExceptionUtils.getStackTrace(eFooterMilterException));
+			FooterMilterException.InitException(false);
+
+			log.error("Exception: " + "FooterMilterException");
+			log.error("Caused by: " + ExceptionUtils.getStackTrace(eFooterMilterException));
 		}
 
 		bodyModified = null;

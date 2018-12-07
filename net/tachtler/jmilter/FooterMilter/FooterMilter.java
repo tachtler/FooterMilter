@@ -6,9 +6,6 @@
 package net.tachtler.jmilter.FooterMilter;
 
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.nightcode.common.service.ServiceManager;
 import org.nightcode.milter.MilterHandler;
 import org.nightcode.milter.config.GatewayConfig;
@@ -47,8 +44,6 @@ import org.nightcode.milter.util.ProtocolSteps;
  ******************************************************************************/
 public class FooterMilter {
 
-	private static Logger log = LogManager.getLogger();
-
 	/**
 	 * Constructor.
 	 */
@@ -69,13 +64,7 @@ public class FooterMilter {
 		try {
 			argsBean = FooterMilterCLIArgsParser.readArgs(argsBean, args);
 		} catch (ParseException eParseException) {
-			log.error(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-			log.error("ParseException                          : " + eParseException);
-			log.error(ExceptionUtils.getStackTrace(eParseException));
-			throw new FooterMilterException(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).",
-					eParseException);
+			throw new FooterMilterException(true, eParseException);
 		}
 
 		/*

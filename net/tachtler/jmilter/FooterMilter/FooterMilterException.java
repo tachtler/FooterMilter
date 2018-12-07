@@ -5,6 +5,10 @@
  */
 package net.tachtler.jmilter.FooterMilter;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /*******************************************************************************
  * Exception for JMilter.
  * 
@@ -28,6 +32,8 @@ package net.tachtler.jmilter.FooterMilter;
  ******************************************************************************/
 public class FooterMilterException extends Exception {
 
+	private static Logger log = LogManager.getLogger();
+
 	/**
 	 * Serial ID.
 	 */
@@ -45,6 +51,8 @@ public class FooterMilterException extends Exception {
 	 */
 	public FooterMilterException(String message) {
 		super(message);
+
+		log.error("Exception: " + message);
 	}
 
 	/**
@@ -52,6 +60,8 @@ public class FooterMilterException extends Exception {
 	 */
 	public FooterMilterException(Throwable cause) {
 		super(cause);
+
+		log.error("Caused by: " + ExceptionUtils.getStackTrace(getCause()));
 	}
 
 	/**
@@ -60,6 +70,8 @@ public class FooterMilterException extends Exception {
 	 */
 	public FooterMilterException(String message, Throwable cause) {
 		super(message, cause);
+		log.error("Exception: " + message);
+		log.error("Caused by: " + ExceptionUtils.getStackTrace(getCause()));
 	}
 
 	/**
@@ -71,6 +83,68 @@ public class FooterMilterException extends Exception {
 	public FooterMilterException(String message, Throwable cause, boolean enableSuppression,
 			boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
+
+		log.error("Exception: " + message);
+		log.error("Caused by: " + ExceptionUtils.getStackTrace(getCause()));
+	}
+
+	/**
+	 * Throws a initialization or a runtime exception, with message.
+	 * 
+	 * @param init
+	 * @param message
+	 */
+	public FooterMilterException(Boolean init, String message) {
+		super(message);
+
+		InitException(init);
+
+		log.error("Exception: " + message);
+	}
+
+	/**
+	 * Throws a initialization or a runtime exception, with cause.
+	 * 
+	 * @param init
+	 * @param cause
+	 */
+	public FooterMilterException(Boolean init, Throwable cause) {
+		super(cause);
+
+		InitException(init);
+
+		log.error("Caused by: " + ExceptionUtils.getStackTrace(getCause()));
+	}
+
+	/**
+	 * Throws a initialization or a runtime exception, with message and cause.
+	 * 
+	 * @param init
+	 * @param message
+	 * @param cause
+	 */
+	public FooterMilterException(Boolean init, String message, Throwable cause) {
+		super(message, cause);
+
+		InitException(init);
+
+		log.error("Exception: " + message);
+		log.error("Caused by: " + ExceptionUtils.getStackTrace(getCause()));
+	}
+
+	/**
+	 * Log a initialization or a runtime message.
+	 * 
+	 * @param init
+	 */
+	public static void InitException(Boolean init) {
+		if (init) {
+			log.error(
+					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
+		} else {
+			log.error(
+					"***** Program stop, because FooterMilter detects a runtime error! ***** (For more details, see error messages and caused by below).");
+		}
 	}
 
 }

@@ -18,7 +18,6 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -146,40 +145,21 @@ public class FooterMilterCLIArgsParser {
 				createFooterHashMaps(iniConfig, argsBean);
 
 			} catch (FileNotFoundException eFileNotFoundException) {
-				log.error(
-						"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-				log.error("Required parameter -c,--config <Path and name of the config file> could not be found!");
-				log.error("InvalidFileFormatException              : " + eFileNotFoundException);
-				log.error(ExceptionUtils.getStackTrace(eFileNotFoundException));
-				throw new FooterMilterException(
+				throw new FooterMilterException(true,
 						"Required parameter -c,--config <Path and name of the config file> could not be found!",
 						eFileNotFoundException);
 			} catch (InvalidFileFormatException eInvalidFileFormatException) {
-				log.error(
-						"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-				log.error(
-						"Required parameter -c,--config <Path and name of the config file> is not in a valid format!");
-				log.error("InvalidFileFormatException              : " + eInvalidFileFormatException);
-				log.error(ExceptionUtils.getStackTrace(eInvalidFileFormatException));
-				throw new FooterMilterException(
+				throw new FooterMilterException(true,
 						"Required parameter -c,--config <Path and name of the config file> is not in a valid format!",
 						eInvalidFileFormatException);
 			} catch (IOException eIOException) {
-				log.error(
-						"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-				log.error("Required parameter -c,--config <Path and name of the config file> could not be accessed!");
-				log.error("IOException                             : " + eIOException);
-				log.error(ExceptionUtils.getStackTrace(eIOException));
-				throw new FooterMilterException(
+				throw new FooterMilterException(true,
 						"Required parameter -c,--config <Path and name of the config file> could not be accessed!",
 						eIOException);
 			}
 		} else {
 			new HelpFormatter().printHelp(USAGE, HEADER, options, FOOTER);
-			log.error(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-			log.error("Required parameter -c,--config <Path and name of the config file> NOT specified!");
-			throw new FooterMilterException(
+			throw new FooterMilterException(true,
 					"Required parameter -c,--config <Path and name of the config file> NOT specified!");
 		}
 
@@ -201,20 +181,12 @@ public class FooterMilterCLIArgsParser {
 			String description) throws FooterMilterException {
 
 		if (iniConfig.get(section, param) == null) {
-			log.error(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-			log.error("Configuration at section [" + section + "] Parameter: " + param + " " + description
-					+ " not found in config file!");
-			throw new FooterMilterException("Configuration at section [" + section + "] Parameter: " + param + " "
+			throw new FooterMilterException(true, "Configuration at section [" + section + "] Parameter: " + param + " "
 					+ description + " not found in config file!");
 		}
 
 		if (iniConfig.get(section, param).isEmpty() || iniConfig.get(section, param).equals("")) {
-			log.error(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-			log.error("Configuration at section [" + section + "] Parameter: " + param + " " + description
-					+ " found with empty value!");
-			throw new FooterMilterException("Configuration at section [" + section + "] Parameter: " + param + " "
+			throw new FooterMilterException(true, "Configuration at section [" + section + "] Parameter: " + param + " "
 					+ description + " found with empty value!");
 		}
 
@@ -238,13 +210,7 @@ public class FooterMilterCLIArgsParser {
 		try {
 			argsBean.setInetAddress(InetAddress.getByName(iniConfig.get("server", "listen")));
 		} catch (UnknownHostException eUnknownHostException) {
-			log.error(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-			log.error(
-					"Configuration at section [server] Parameter: listen <IPv4-Address or Hostname to listen> is NOT a valid IPv4 address or hostname!");
-			log.error("UnknownHostException                    : " + eUnknownHostException);
-			log.error(ExceptionUtils.getStackTrace(eUnknownHostException));
-			throw new FooterMilterException(
+			throw new FooterMilterException(true,
 					"Configuration at section [server] Parameter: listen <IPv4-Address or Hostname to listen> is NOT a valid IPv4 address or hostname!",
 					eUnknownHostException);
 		}
@@ -266,13 +232,7 @@ public class FooterMilterCLIArgsParser {
 		try {
 			port = Integer.parseInt(iniConfig.get("server", "port"));
 		} catch (NumberFormatException eNumberFormatException) {
-			log.error(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-			log.error(
-					"Configuration at section [server] Parameter: port <Port to listen> was NOT a valid number, between 1 and 65535!");
-			log.error("NumberFormatException                   : " + eNumberFormatException);
-			log.error(ExceptionUtils.getStackTrace(eNumberFormatException));
-			throw new FooterMilterException(
+			throw new FooterMilterException(true,
 					"Configuration at section [server] Parameter: port <Port to listen> was NOT a valid number, between 1 and 65535!",
 					eNumberFormatException);
 		}
@@ -280,11 +240,7 @@ public class FooterMilterCLIArgsParser {
 		if (port >= 1 && port <= 65535) {
 			argsBean.setPort(port);
 		} else {
-			log.error(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-			log.error(
-					"Configuration at section [server] Parameter: port <Port to listen> was NOT a valid port number, between 1 and 65535!");
-			throw new FooterMilterException(
+			throw new FooterMilterException(true,
 					"Configuration at section [server] Parameter: port <Port to listen> was NOT a valid port number, between 1 and 65535!");
 		}
 	}
@@ -314,11 +270,7 @@ public class FooterMilterCLIArgsParser {
 				argsBean.setTcpLogLevel("INFO");
 			}
 		} else {
-			log.error(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-			log.error(
-					"Configuration at section [server] Parameter: logging <TCP-Logging> is NOT valid! (Possible values: true|false|yes|no|y|n (case insensitive))");
-			throw new FooterMilterException(
+			throw new FooterMilterException(true,
 					"Configuration at section [server] Parameter: logging <TCP-Logging> is NOT valid! (Possible values: true|false|yes|no|y|n (case insensitive))");
 		}
 
@@ -341,11 +293,7 @@ public class FooterMilterCLIArgsParser {
 				|| iniConfig.get("server", "loglevel").equalsIgnoreCase("DEBUG")) {
 			argsBean.setTcpLogLevel(iniConfig.get("server", "loglevel").toUpperCase());
 		} else {
-			log.error(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-			log.error(
-					"Configuration at section [server] Parameter: loglevel <TCP-Logging Log-Level> is NOT valid! (Possible values: INFO, WARN, ERROR, TRACE or DEBUG)");
-			throw new FooterMilterException(
+			throw new FooterMilterException(true,
 					"Configuration at section [server] Parameter: loglevel <TCP-Logging Log-Level> is NOT valid! (Possible values: INFO, WARN, ERROR, TRACE or DEBUG)");
 		}
 
@@ -419,12 +367,8 @@ public class FooterMilterCLIArgsParser {
 										&& section.fetch(option) != null) {
 									from = section.fetch(option);
 								} else {
-									log.error(
-											"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-									log.error("Configuration at section [" + section.getName()
-											+ "] Parameter: from has an empty value!");
-									throw new FooterMilterException("Configuration at section [" + section.getName()
-											+ "] Parameter: from has an empty value!");
+									throw new FooterMilterException(true, "Configuration at section ["
+											+ section.getName() + "] Parameter: from has an empty value!");
 								}
 							}
 
@@ -445,11 +389,7 @@ public class FooterMilterCLIArgsParser {
 						}
 
 					} else {
-						log.error(
-								"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-						log.error("Configuration at section [" + section.getName()
-								+ "] Parameter: enabled is NOT specified!");
-						throw new FooterMilterException("Configuration at section [" + section.getName()
+						throw new FooterMilterException(true, "Configuration at section [" + section.getName()
 								+ "] Parameter: enabled is NOT specified!");
 					}
 				}
@@ -494,11 +434,7 @@ public class FooterMilterCLIArgsParser {
 	private static void footerIsParameterValid(String section, String param) throws FooterMilterException {
 		if (!param.equalsIgnoreCase("enabled") && !param.equalsIgnoreCase("from") && !param.equalsIgnoreCase("text")
 				&& !param.equalsIgnoreCase("html")) {
-			log.error(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-			log.error("Configuration at section [" + section + "] Parameter: " + param
-					+ " is not a valid parameter! (Possible parameters are: enabled, from, text, html) ONLY!");
-			throw new FooterMilterException("Configuration at section [" + section + "] Parameter: " + param
+			throw new FooterMilterException(true, "Configuration at section [" + section + "] Parameter: " + param
 					+ " is not a valid parameter! (Possible parameters are: enabled, from, text, html) ONLY!");
 		}
 	}
@@ -524,12 +460,8 @@ public class FooterMilterCLIArgsParser {
 				result = true;
 			}
 		} else {
-			log.error(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-			log.error("Configuration at section [" + section + "] Parameter: " + param + " = " + value
-					+ " is NOT valid! (Possible values: true|false|yes|no|y|n (case insensitive))");
-			throw new FooterMilterException("Configuration at section [" + section + "] Parameter: " + param + " = "
-					+ value + " is NOT valid! (Possible values: true|false|yes|no|y|n (case insensitive))");
+			throw new FooterMilterException(true, "Configuration at section [" + section + "] Parameter: " + param
+					+ " = " + value + " is NOT valid! (Possible values: true|false|yes|no|y|n (case insensitive))");
 		}
 
 		return result;

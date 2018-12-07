@@ -12,7 +12,6 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.QuotedPrintableCodec;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.james.mime4j.dom.BinaryBody;
 import org.apache.james.mime4j.dom.Body;
 import org.apache.james.mime4j.dom.Entity;
@@ -83,7 +82,7 @@ public class FooterMilterUtilities {
 	 * @param footer
 	 * @return String
 	 */
-	public static String getTextContentWithFooter(Entity entity, String footer) {
+	public static String getTextContentWithFooter(Entity entity, String footer) throws FooterMilterException {
 		stringBuffer.delete(0, stringBuffer.length());
 
 		stringBuffer.append(FooterMilterUtilities.getTextBody(entity));
@@ -142,7 +141,7 @@ public class FooterMilterUtilities {
 	 * @param footer
 	 * @return String
 	 */
-	public static String getHtmlContentWithFooter(Entity entity, String footer) {
+	public static String getHtmlContentWithFooter(Entity entity, String footer) throws FooterMilterException {
 		stringBuffer.delete(0, stringBuffer.length());
 		entityTextBody = null;
 
@@ -228,7 +227,7 @@ public class FooterMilterUtilities {
 	 * @param entity
 	 * @return String
 	 */
-	public static String getBinaryContent(Entity entity) {
+	public static String getBinaryContent(Entity entity) throws FooterMilterException {
 		stringBuffer.delete(0, stringBuffer.length());
 
 		stringBuffer.append(FooterMilterUtilities.getBinaryBody(entity));
@@ -245,7 +244,7 @@ public class FooterMilterUtilities {
 	 * @param entity
 	 * @return String
 	 */
-	public static String getTextBody(Entity entity) {
+	public static String getTextBody(Entity entity) throws FooterMilterException {
 		TextBody textBody = (TextBody) entity.getBody();
 		return getBody(entity, textBody);
 	}
@@ -256,7 +255,7 @@ public class FooterMilterUtilities {
 	 * @param part
 	 * @return String
 	 */
-	public static String getBinaryBody(Entity entity) {
+	public static String getBinaryBody(Entity entity) throws FooterMilterException {
 		BinaryBody binaryBody = (BinaryBody) entity.getBody();
 		return getBody(entity, binaryBody);
 	}
@@ -274,7 +273,7 @@ public class FooterMilterUtilities {
 	 * @param body
 	 * @return String
 	 */
-	private static String getBody(Entity entity, Body body) {
+	private static String getBody(Entity entity, Body body) throws FooterMilterException {
 		String bodyString = null;
 		try {
 			InputStream inputStream = ((SingleBody) body).getInputStream();
@@ -290,10 +289,7 @@ public class FooterMilterUtilities {
 				bodyString = new String(bytes);
 			}
 		} catch (IOException eIOException) {
-			log.error(
-					"***** Program stop, because FooterMilter detects a runtime error! ***** (For more details, see error messages and caused by below).");
-			log.error("IOException                             : " + eIOException);
-			log.error(ExceptionUtils.getStackTrace(eIOException));
+			throw new FooterMilterException(false, eIOException);
 		}
 
 		log.debug("*bodyString   <- (Start at next line) -> : " + System.lineSeparator() + bodyString);
@@ -308,7 +304,7 @@ public class FooterMilterUtilities {
 	 * @param string
 	 * @return String
 	 */
-	private static String createQuotedPrintable(String string) {
+	private static String createQuotedPrintable(String string) throws FooterMilterException {
 		StringBuffer quotedStringBuffer = new StringBuffer();
 		String[] stringLines = string.split(System.lineSeparator());
 		QuotedPrintableCodec quotedPrintableCodec = new QuotedPrintableCodec();
@@ -320,10 +316,7 @@ public class FooterMilterUtilities {
 				quotedStringBuffer.append(quotedPrintableCodec.encode(line));
 				quotedStringBuffer.append(System.lineSeparator());
 			} catch (EncoderException eEncoderException) {
-				log.error(
-						"***** Program stop, because FooterMilter detects a runtime error! ***** (For more details, see error messages and caused by below).");
-				log.error("IOException                             : " + eEncoderException);
-				log.error(ExceptionUtils.getStackTrace(eEncoderException));
+				throw new FooterMilterException(false, eEncoderException);
 			}
 
 		}

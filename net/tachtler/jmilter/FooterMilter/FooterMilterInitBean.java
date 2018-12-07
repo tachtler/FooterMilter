@@ -9,10 +9,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 /*******************************************************************************
  * Bean for JMilter.
  * 
@@ -35,8 +31,6 @@ import org.apache.logging.log4j.Logger;
  *         Copyright (c) 2018 by Klaus Tachtler.
  ******************************************************************************/
 public class FooterMilterInitBean {
-
-	private static Logger log = LogManager.getLogger();
 
 	/**
 	 * Returns the IPv4-Address.
@@ -91,13 +85,7 @@ public class FooterMilterInitBean {
 		try {
 			this.inetAddress = InetAddress.getByName("127.0.0.1");
 		} catch (UnknownHostException eUnknownHostException) {
-			log.error(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).");
-			log.error("UnknownHostException                    : " + eUnknownHostException);
-			log.error(ExceptionUtils.getStackTrace(eUnknownHostException));
-			throw new FooterMilterException(
-					"***** Program stop, because FooterMilter could not be initialized! ***** (For more details, see error messages and caused by below).",
-					eUnknownHostException);
+			throw new FooterMilterException(true, eUnknownHostException);
 		}
 
 		this.port = 10099;
