@@ -174,7 +174,7 @@ In addition, subsequent *"Escape" sequences* can be used to increase readability
 |`\"`
 |Insert a double quotation mark in the text at this point.
 
-|``\````\``
+|``\\``
 |Add a "backslash" character to the text at this point.
 |===
 
