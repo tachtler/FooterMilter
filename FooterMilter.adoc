@@ -1,0 +1,398 @@
+= FooterMilter.jar(1)
+Klaus Tachtler
+:doctype: manpage
+:release-version: 1.0.
+:man manual: FooterMilter.jar Manual
+:man source: FooterMilter.jar {release-version}
+:page-layout: base
+
+== NAME
+
+FooterMilter.jar - Java implementation of the Sendmail Milter protocol based on the project of org.nightcode.jmilter from dmitry@nightcode.org to insert a footer/disclaimer at the end of the body of an email.
+
+== SYNOPSIS
+
+*[_PATH_TO_]/java -jar [_PATH_TO_]/FooterMilter.jar [_OPTION_] [-h] [-v] [-d] _FILE_ [-c [_PATH_TO_CONFIG_FILE_]/[_NAME_OF_CONFIG_FILE_]]*
+
+== DESCRIPTION
+
+The FooterMilter.jar(1) is the Java implementation of the Sendmail Milter protocol based on the project of org.nightcode.jmilter from dmitry@nightcode.org to insert a footer/disclaimer at the end of the body of an email.
+
+The _OPTION_ *-c, --config* is _REQUIRED_ and the _FILE_ [_PATH_TO_CONFIG_FILE_]/[_NAME_OF_CONFIG_FILE_]] is _also_ _REQUIRED_ for running the program.
+
+== OPTIONS
+
+=== Configuration parameter
+
+*-c, --config*[_PATH_TO_CONFIG_FILE_]/[_NAME_OF_CONFIG_FILE_]]::
+  [REQUIRED] Path and name of the config file
+
+=== Debugging
+
+*-d, --debug*::
+  DEBUG mode with runtime output
+
+=== Program Information
+
+*-h, --help*::
+  Print usage information
+
+*-v, --version*::
+  Version of the program
+
+== CONFIGURATION FILE
+
+The main configuration file of the FooterMilter - *footermilter.ini* includes all settings for
+
+* the start and the start parameters - section *`[server]`*
+* the configuration of the footer section to be used *`[footer]`*
+
+=== Section: [service]
+
+The following parameters can be set in the *section `[server]`*:
+
+.Table Section: [service] 
+|===
+|Parameter|Default value|Description
+
+|`listen`
+|`127.0.0.1`
+|IPv4-address or hostname where the service/daemon should be reachable 
+
+|`port`
+|`10099`
+|Port where the service/daemon should be reachable 
+
+|`logging`
+|`false`
+|Activation of TCP logging from JMilter
+
+|`loglevel`
+|`INFO`
+|Log-Level for TCP-Logging of JMilter
+|===
+
+WARNING: Enabling logging activates a TCP log which is very talkative!
+
+WARNING: This should only be activated in case of connection problems, as the TCP connection data is output here.
+
+WARNING: The log level should *NOT* be set to *DEBUG, because NO log data is output here. This only happens with the other possible log levels such as INFO !*
+
+WARNING: If *DEBUG* logging is desired for troubleshooting purposes, this can be achieved with the [_OPTION_] *-d* in the start script or with a manual start.
+
+=== Section: [footer]
+
+In the *[footer] section(s) multiple configurations are possible and desired, but please note the following:*
+
+* Each section [footer] must begin with the word footer.
+* Each section [footer] must have a unambiguous designation.
+
+_Examples:_
+
+[source,ini]
+....
+    [footer: default]
+    [localpart@domain.tld]
+    [footer 001]
+    [footer-default]
+    [footer]
+....
+
+The following parameters can be set in the section(s) [footer]:
+
+.Table Section: [footer] 
+|===
+|Parameter|Default value|Description
+
+|`enabled`
+|`true`
+|Should this [footer] section be active
+
+|`from`
+|`user@example.com` or `@example.com`
+|E-Mail-Address or Domain with '@'-sign in front
+
+|`text`
+|`--`
+| Footer for the Content-Type - text/plain
+
+|`html`
+|`--`
+|Footer for the Content-Type - text/html
+|===
+
+The following special feature applies to the
+
+* *Parameter:* `from`
+
+If `@Domain.tld` is entered here instead of a complete e-mail address, this Footer will be attached if no e-mail address applies to other Footers.
+
+WARNING: `@Domain.tld` is the standard footer for this domain!
+
+_Examples:_
+....
+    user@example.com - e-mail address
+    @example.com - Default for this domain if no email address matches.
+    @sub.example.com - Default for this sub-domain if no email address matches.
+....
+
+The following special feature applies to the
+
+* *Parameter:* `text` and
+* *Parameter:* `html`
+
+For better readability during the configuration of the parameters text and html, e.g. add a
+
+* `\` *(backslash)*
+
+*at the END of a line.*
+
+In addition, subsequent *"Escape" sequences* can be used to increase readability when configuring the respective *Footer*.
+
+.Table Section: [footer] - "Escape" sequences
+|===
+|Escape sequence|Description
+
+|`\t`
+|Insert a tabulator into the text at this point.
+
+|`\b`
+|Add a "backspace" to the text at this point.
+
+|`\n`
+|Add a new line to the text at this point.
+
+|`\r`
+|Add a carriage return code to the text at this point.
+
+|`\f`
+|Add a form feed to the text at this point.
+
+|`\'`
+|Insert a single quotation mark into the text at this point.
+
+|`\"`
+|Insert a double quotation mark in the text at this point.
+
+|``\````\``
+|Add a "backslash" character to the text at this point.
+|===
+
+_Examples:_
+
+*text/plain*
+....
+-- \
+\n\
+\n\
+--------------------------------------------\n\
+Footer default\n\
+--------------------------------------------\n\
+\n
+....
+
+*text/html*
+....
+<br\>\n\
+<br\>\n\
+<span style=\"font-family:monospace; color:#000000\">--&nbsp;</span><br>\n\
+<br\>\n\
+<span style=\"font-family:monospace; color:#000000\">Footer default</span><br>\n\
+<br\>\n\n
+....
+
+=== EXAMPLE
+
+Finally as an *example* a *complete configuration file*:
+
+[source,ini]
+....
+################################################################################
+# JMilter Server for connections from an MTA to add a footer.
+# 
+# JMilter is an Open Source implementation of the Sendmail milter protocol, for
+# implementing milters in Java that can interface with the Sendmail or Postfix
+# MTA.
+# 
+# Java implementation of the Sendmail Milter protocol based on the project of
+# org.nightcode.jmilter from dmitry@nightcode.org.
+# 
+# @author Klaus Tachtler. <klaus@tachtler.net>
+# 
+#         Homepage : http://www.tachtler.net
+# 
+#         Licensed under the Apache License, Version 2.0 (the "License"); you
+#         may not use this file except in compliance with the License. You may
+#         obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#         Unless required by applicable law or agreed to in writing, software
+#         distributed under the License is distributed on an "AS IS" BASIS,
+#         WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+#         implied. See the License for the specific language governing
+#         permissions and limitations under the License..
+# 
+# Copyright (c) 2018 Klaus Tachtler. All Rights Reserved.
+# Klaus Tachtler. <klaus@tachtler.net>
+# http://www.tachtler.net
+#
+################################################################################
+ 
+ 
+################################################################################ 
+# [server] section - Start configuration for the server.
+################################################################################
+
+[server]
+
+# IPv4 address or hostname to listen.
+listen = 127.0.0.1
+
+# Port to listen.
+port = 10099
+
+# Enable or disable TCP-Logging by setting the following parameter:
+# true|false|yes|no|y|n (case insensitive)
+#
+# !IMPORTANT: Please set to false, true enables ONLY TCP-Logging see:
+#             https://github.com/nightcode/jmilter
+#  
+#             If you want do DEBUG the FooterMilter.jar itself, please use the
+#             parameter --> -d <-- as startup parameter as well!  
+#
+logging = false
+
+# Set TCP-Logging Log-Level to INFO, WARN, ERROR, TRACE or DEBUG.
+# Only relevant if logging = true
+#
+# !IMPORTANT: Please set to INFO to see the TCP-Logging, DEBUG will produce  
+#             NO output. This is only for TCP-Logging see: 
+#             https://github.com/nightcode/jmilter
+#
+loglevel = INFO
+
+
+################################################################################ 
+# [footer] section - Configuration of the footers to be used.
+################################################################################
+#
+# !IMPORTANT: Every section  
+#             a.) must start with the word: footer
+#             b.) must have an unique name
+#
+# EXAMPLES:   [footer: default], [footer: localpart@domain.tld], [footer: 001]
+#
+# ==============================================================================
+#             
+# from field: If inside a [footer]-section the from field was defined with the
+#             following syntax: @domain.tld -> NO localpart! <-
+#             this will be used as DEFAULT for the domain, if no email address
+#             will match!
+#
+# EXAMPLE:    from = @example.com
+#
+# ==============================================================================
+#             
+# text/html : For a better configuration view for the text and html fields, it's
+#             possible to use a single \ (backslash) at the end of the line!
+#
+# EXAMPLE:    text = -- \
+#             first word \
+#             second word \
+#             last word.
+#        
+# SAME AS:    text = -- first word second word last word.
+#
+# ==============================================================================
+#             
+# escape's  : Some escape sequences can be used, for more well formatted output!
+#             Escape sequences description:
+#                           
+#             \t     Insert a tab in the text at this point.
+#             \b     Insert a backspace in the text at this point.
+#             \n     Insert a newline in the text at this point.
+#             \r     Insert a carriage return in the text at this point.
+#             \f     Insert a formfeed in the text at this point.
+#             \'     Insert a single quote character in the text at this point.
+#             \"     Insert a double quote character in the text at this point.
+#             \\     Insert a backslash character in the text at this point.
+#
+################################################################################
+
+[footer: @example.com]
+
+# Enable this footer.
+enabled = true
+
+# Email "mail from:" for generating the footer.
+from = @example.com
+
+# Footer for text/plain.
+text = -- \
+\n\
+\n\
+--------------------------------------------\n\
+Footer default\n\
+--------------------------------------------\n\
+\n
+
+# Footer for text/html.
+html = <br\>\n\
+<br\>\n\
+<span style=\"font-family:monospace; color:#000000\">--&nbsp;</span><br>\n\
+<br\>\n\
+<span style=\"font-family:monospace; color:#000000\">Footer default</span><br>\n\
+<br\>\n\n
+
+################################################################################
+
+[footer: user@example.com]
+
+# Enable this footer.
+enabled = true
+
+# Email "mail from:" for generating the footer.
+from = user@example.com
+
+# Footer for text/plain.
+text = -- \n\n--------------------------------------------\nFooter user\n--------------------------------------------\n\n
+
+# Footer for text/html.
+html = <br\>\n<br\>\n<span style=\"font-family:monospace; color:#000000\">--&nbsp;</span><br>\n<br\>\n<span style=\"font-family:monospace; color:#000000\">Footer user</span><br>\n<br\>\n\n
+
+################################################################################
+....
+
+== ENVIRONMENT
+
+_There is only one dependency for the execution of FooterMilter_:
+
+Running *Java installation e.g. OpenJDK* from *version 1.8 or higher*.
+
+== EXIT STATUS
+
+After the start of the program, the configured IP address and port are listened on, so that an EXIT code is not carried during the runtime. Basically the daemon should set the RETURN code to 0 after termination.
+
+== BUGS
+
+Refer to the *FooterMilter.jar* issue tracker at https://github.com/tachtler/FooterMilter/issues?q=is%3Aopen.
+
+== AUTHORS
+
+*FooterMilter.jar* was written by Klaus Tachtler. mailto:klaus@tachtler.net
+
+*org.nightcode.jmilter* was written by Dmitry. mailto:dmitry@nightcode.org
+
+== RESOURCES
+
+*DokuWiki web site:* https://dokuwiki.tachtler.net/doku.php?id=tachtler:postfix_centos_7_-_footermilter_einsetzen_footermilter
+
+*Git source repository on GitHub:* https://github.com/tachtler/FooterMilter
+
+== COPYING
+
+Copyright \(C) 2018 Klaus Tachtler. Free use of this software is granted under the terms of the Apache License 2.0.
+
+Apache License Version 2.0, January 2004, http://www.apache.org/licenses/
+
