@@ -81,9 +81,9 @@ FooterMilter for Sendmail or Postfix to insert a footer at the end of the body.
  -h,--help           Print this usage information
  -v,--version        Version of the program
 
-Copyright (c) 2018 Klaus Tachtler, <klaus@tachtler.net>.
+Copyright (c) 2022 Klaus Tachtler, <klaus@tachtler.net>.
 All Rights Reserved.
-Version 1.0.
+Version 1.1.
 ```
 
 :exclamation: **IMPORTANT** - The **Java** - `FooterMilter.jar` archive file can **ONLY be executed** if the other files are also present in the described directory structure, **especially the directory** `lib` **and it's content, must be in the same directory !**
@@ -192,14 +192,6 @@ The following parameters can be set in the section `[server]`:
 | ------------ | ------------- | ------------------------------------------------------------------------------ |
 | `listen`    | `127.0.0.1`  | IPv4-address or hostname where the service/daemon should be reachable          |
 | `port`      | `10099`       | Port where the service/daemon should be reachable                              |
-| `logging`   | `false`       | Activation of TCP logging from [JMilter](https://github.com/nightcode/jmilter) |
-| `loglevel`  | `INFO`        | Log-Level for TCP-Logging of [JMilter](https://github.com/nightcode/jmilter)   |
-
-:exclamation: **NOTE** - **Enabling logging activates a TCP log which is very talkative!**
-
-:exclamation: **NOTE** - **This should only be activated in case of connection problems, as the TCP connection data is output here.**
-
-:exclamation: **NOTE** - **The log level should NOT be set to** `DEBUG`, **because NO log data is output here. This only happens with the other possible log levels such as** `INFO` **!**
 
 :exclamation: **NOTE** - **If** `DEBUG` **logging is desired for troubleshooting purposes, this can be achieved with the parameter** `-d` **in the start script or with a manual start.**
 
@@ -320,7 +312,7 @@ Finally as an example a **complete configuration file**:
 #         implied. See the License for the specific language governing
 #         permissions and limitations under the License..
 # 
-# Copyright (c) 2018 Klaus Tachtler. All Rights Reserved.
+# Copyright (c) 2022 Klaus Tachtler. All Rights Reserved.
 # Klaus Tachtler. <klaus@tachtler.net>
 # http://www.tachtler.net
 #
@@ -338,27 +330,6 @@ listen = 127.0.0.1
 
 # Port to listen.
 port = 10099
-
-# Enable or disable TCP-Logging by setting the following parameter:
-# true|false|yes|no|y|n (case insensitive)
-#
-# !IMPORTANT: Please set to false, true enables ONLY TCP-Logging see:
-#             https://github.com/nightcode/jmilter
-#  
-#             If you want do DEBUG the FooterMilter.jar itself, please use the
-#             parameter --> -d <-- as startup parameter as well!  
-#
-logging = false
-
-# Set TCP-Logging Log-Level to INFO, WARN, ERROR, TRACE or DEBUG.
-# Only relevant if logging = true
-#
-# !IMPORTANT: Please set to INFO to see the TCP-Logging, DEBUG will produce  
-#             NO output. This is only for TCP-Logging see: 
-#             https://github.com/nightcode/jmilter
-#
-loglevel = INFO
-
 
 ################################################################################ 
 # [footer] section - Configuration of the footers to be used.
