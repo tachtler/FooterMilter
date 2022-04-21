@@ -1,32 +1,41 @@
 '\" t
 .\"     Title: footermilter.jar
 .\"    Author: Klaus Tachtler
-.\" Generator: Asciidoctor 1.5.6.1
-.\"      Date: 2019-09-04
+.\" Generator: Asciidoctor 2.0.17
+.\"      Date: 2022-04-21
 .\"    Manual: FooterMilter.jar Manual
-.\"    Source: FooterMilter.jar 1.0.
+.\"    Source: FooterMilter.jar 1.1.
 .\"  Language: English
 .\"
-.TH "FOOTERMILTER.JAR" "1" "2019-09-04" "FooterMilter.jar 1.0." "FooterMilter.jar Manual"
+.TH "FOOTERMILTER.JAR" "1" "2022-04-21" "FooterMilter.jar 1.1." "FooterMilter.jar Manual"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
 .nh
 .ad l
 .de URL
-\\$2 \(laURL: \\$1 \(ra\\$3
+\fI\\$2\fP <\\$1>\\$3
 ..
-.if \n[.g] .mso www.tmac
-.LINKSTYLE blue R < >
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
 .SH "NAME"
-footermilter.jar \- Java implementation of the Sendmail Milter protocol based on the project of org.nightcode.jmilter from dmitry@nightcode.org to insert a footer/disclaimer at the end of the body of an email.
+FooterMilter.jar \- Java implementation of the Sendmail Milter protocol based on the project of org.nightcode.jmilter from dmitry@nightcode.org to insert a footer/disclaimer at the end of the body of an email.
 .SH "SYNOPSIS"
 .sp
 \fB[\fIPATH_TO\fP]/java \-jar [\fIPATH_TO\fP]/FooterMilter.jar [\fIOPTION\fP] [\-h] [\-v] [\-d] \fIFILE\fP [\-c [\fIPATH_TO_CONFIG_FILE\fP]/[\fINAME_OF_CONFIG_FILE\fP]]\fP
 .SH "DESCRIPTION"
 .sp
 The FooterMilter.jar(1) is the Java implementation of the Sendmail Milter protocol based on the project of org.nightcode.jmilter from \c
-.MTO "dmitry\(atnightcode.org" "dmitry@nightcode.org" " "
+.MTO "dmitry\(atnightcode.org" "" ""
 to insert a footer/disclaimer at the end of the body of an email.
 .sp
 The \fIOPTION\fP \fB\-c, \-\-config\fP is \fIREQUIRED\fP and the \fIFILE\fP [\fIPATH_TO_CONFIG_FILE\fP]/[\fINAME_OF_CONFIG_FILE\fP]] is \fIalso\fP \fIREQUIRED\fP for running the program.
@@ -63,10 +72,10 @@ The main configuration file of the FooterMilter \- \fBfootermilter.ini\fP includ
 \h'-04'\(bu\h'+03'\c
 .\}
 .el \{\
-.sp -1
-.IP \(bu 2.3
+.  sp -1
+.  IP \(bu 2.3
 .\}
-the start and the start parameters \- section \fB\f[CR][server]\fP\fP
+the start and the start parameters \- section \fB\f(CR[server]\fP\fP
 .RE
 .sp
 .RS 4
@@ -74,14 +83,14 @@ the start and the start parameters \- section \fB\f[CR][server]\fP\fP
 \h'-04'\(bu\h'+03'\c
 .\}
 .el \{\
-.sp -1
-.IP \(bu 2.3
+.  sp -1
+.  IP \(bu 2.3
 .\}
-the configuration of the footer section to be used \fB\f[CR][footer]\fP\fP
+the configuration of the footer section to be used \fB\f(CR[footer]\fP\fP
 .RE
 .SS "Section: [service]"
 .sp
-The following parameters can be set in the \fBsection \f[CR][server]\fP\fP:
+The following parameters can be set in the \fBsection \f(CR[server]\fP\fP:
 .sp
 .it 1 an-trap
 .nr an-no-space-flag 1
@@ -103,97 +112,27 @@ Description
 T}
 T{
 .sp
-\f[CR]listen\fP
+\f(CRlisten\fP
 T}:T{
 .sp
-\f[CR]127.0.0.1\fP
+\f(CR127.0.0.1\fP
 T}:T{
 .sp
 IPv4\-address or hostname where the service/daemon should be reachable
 T}
 T{
 .sp
-\f[CR]port\fP
+\f(CRport\fP
 T}:T{
 .sp
-\f[CR]10099\fP
+\f(CR10099\fP
 T}:T{
 .sp
 Port where the service/daemon should be reachable
 T}
-T{
-.sp
-\f[CR]logging\fP
-T}:T{
-.sp
-\f[CR]false\fP
-T}:T{
-.sp
-Activation of TCP logging from JMilter
-T}
-T{
-.sp
-\f[CR]loglevel\fP
-T}:T{
-.sp
-\f[CR]INFO\fP
-T}:T{
-.sp
-Log\-Level for TCP\-Logging of JMilter
-T}
 .TE
 .sp
-.if n \{\
-.sp
-.\}
-.RS 4
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-.B Warning
-.ps -1
-.br
-.sp
-Enabling logging activates a TCP log which is very talkative!
-.sp .5v
-.RE
-.if n \{\
-.sp
-.\}
-.RS 4
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-.B Warning
-.ps -1
-.br
-.sp
-This should only be activated in case of connection problems, as the TCP connection data is output here.
-.sp .5v
-.RE
-.if n \{\
-.sp
-.\}
-.RS 4
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-.B Warning
-.ps -1
-.br
-.sp
-The log level should \fBNOT\fP be set to \fBDEBUG, because NO log data is output here. This only happens with the other possible log levels such as INFO !\fP
-.sp .5v
-.RE
-.if n \{\
-.sp
-.\}
+.if n .sp
 .RS 4
 .it 1 an-trap
 .nr an-no-space-flag 1
@@ -216,8 +155,8 @@ In the \fB[footer] section(s) multiple configurations are possible and desired, 
 \h'-04'\(bu\h'+03'\c
 .\}
 .el \{\
-.sp -1
-.IP \(bu 2.3
+.  sp -1
+.  IP \(bu 2.3
 .\}
 Each section [footer] must begin with the word footer.
 .RE
@@ -227,27 +166,25 @@ Each section [footer] must begin with the word footer.
 \h'-04'\(bu\h'+03'\c
 .\}
 .el \{\
-.sp -1
-.IP \(bu 2.3
+.  sp -1
+.  IP \(bu 2.3
 .\}
 Each section [footer] must have a unambiguous designation.
 .RE
 .sp
 \fIExamples:\fP
 .sp
-.if n \{\
-.RS 4
-.\}
+.if n .RS 4
 .nf
+.fam C
     [footer: default]
     [localpart@domain.tld]
     [footer 001]
     [footer\-default]
     [footer]
+.fam
 .fi
-.if n \{\
-.RE
-.\}
+.if n .RE
 .sp
 The following parameters can be set in the section(s) [footer]:
 .sp
@@ -271,40 +208,40 @@ Description
 T}
 T{
 .sp
-\f[CR]enabled\fP
+\f(CRenabled\fP
 T}:T{
 .sp
-\f[CR]true\fP
+\f(CRtrue\fP
 T}:T{
 .sp
 Should this [footer] section be active
 T}
 T{
 .sp
-\f[CR]from\fP
+\f(CRfrom\fP
 T}:T{
 .sp
-\f[CR]user@example.com\fP or \f[CR]@example.com\fP
+\f(CRuser@example.com\fP or \f(CR@example.com\fP
 T}:T{
 .sp
-E\-Mail\-Address or Domain with \(aq@\(aq\-sign in front
+E\-Mail\-Address or Domain with \*(Aq@\*(Aq\-sign in front
 T}
 T{
 .sp
-\f[CR]text\fP
+\f(CRtext\fP
 T}:T{
 .sp
-\f[CR]\-\-\fP
+\f(CR\-\-\fP
 T}:T{
 .sp
 Footer for the Content\-Type \- text/plain
 T}
 T{
 .sp
-\f[CR]html\fP
+\f(CRhtml\fP
 T}:T{
 .sp
-\f[CR]\-\-\fP
+\f(CR\-\-\fP
 T}:T{
 .sp
 Footer for the Content\-Type \- text/html
@@ -319,16 +256,14 @@ The following special feature applies to the
 \h'-04'\(bu\h'+03'\c
 .\}
 .el \{\
-.sp -1
-.IP \(bu 2.3
+.  sp -1
+.  IP \(bu 2.3
 .\}
-\fBParameter:\fP \f[CR]from\fP
+\fBParameter:\fP \f(CRfrom\fP
 .RE
 .sp
-If \f[CR]@Domain.tld\fP is entered here instead of a complete e\-mail address, this Footer will be attached if no e\-mail address applies to other Footers.
-.if n \{\
-.sp
-.\}
+If \f(CR@Domain.tld\fP is entered here instead of a complete e\-mail address, this Footer will be attached if no e\-mail address applies to other Footers.
+.if n .sp
 .RS 4
 .it 1 an-trap
 .nr an-no-space-flag 1
@@ -339,23 +274,21 @@ If \f[CR]@Domain.tld\fP is entered here instead of a complete e\-mail address, t
 .ps -1
 .br
 .sp
-\f[CR]@Domain.tld\fP is the standard footer for this domain!
+\f(CR@Domain.tld\fP is the standard footer for this domain!
 .sp .5v
 .RE
 .sp
 \fIExamples:\fP
 .sp
-.if n \{\
-.RS 4
-.\}
+.if n .RS 4
 .nf
+.fam C
     user@example.com \- e\-mail address
     @example.com \- Default for this domain if no email address matches.
     @sub.example.com \- Default for this sub\-domain if no email address matches.
+.fam
 .fi
-.if n \{\
-.RE
-.\}
+.if n .RE
 .sp
 The following special feature applies to the
 .sp
@@ -364,10 +297,10 @@ The following special feature applies to the
 \h'-04'\(bu\h'+03'\c
 .\}
 .el \{\
-.sp -1
-.IP \(bu 2.3
+.  sp -1
+.  IP \(bu 2.3
 .\}
-\fBParameter:\fP \f[CR]text\fP and
+\fBParameter:\fP \f(CRtext\fP and
 .RE
 .sp
 .RS 4
@@ -375,10 +308,10 @@ The following special feature applies to the
 \h'-04'\(bu\h'+03'\c
 .\}
 .el \{\
-.sp -1
-.IP \(bu 2.3
+.  sp -1
+.  IP \(bu 2.3
 .\}
-\fBParameter:\fP \f[CR]html\fP
+\fBParameter:\fP \f(CRhtml\fP
 .RE
 .sp
 For better readability during the configuration of the parameters text and html, e.g. add a
@@ -388,10 +321,10 @@ For better readability during the configuration of the parameters text and html,
 \h'-04'\(bu\h'+03'\c
 .\}
 .el \{\
-.sp -1
-.IP \(bu 2.3
+.  sp -1
+.  IP \(bu 2.3
 .\}
-\f[CR]\(rs\fP \fB(backslash)\fP
+\f(CR\(rs\fP \fB(backslash)\fP
 .RE
 .sp
 \fBat the END of a line.\fP
@@ -415,56 +348,56 @@ Description
 T}
 T{
 .sp
-\f[CR]\(rst\fP
+\f(CR\(rst\fP
 T}:T{
 .sp
 Insert a tabulator into the text at this point.
 T}
 T{
 .sp
-\f[CR]\(rsb\fP
+\f(CR\(rsb\fP
 T}:T{
 .sp
 Add a "backspace" to the text at this point.
 T}
 T{
 .sp
-\f[CR]\(rsn\fP
+\f(CR\(rsn\fP
 T}:T{
 .sp
 Add a new line to the text at this point.
 T}
 T{
 .sp
-\f[CR]\(rsr\fP
+\f(CR\(rsr\fP
 T}:T{
 .sp
 Add a carriage return code to the text at this point.
 T}
 T{
 .sp
-\f[CR]\(rsf\fP
+\f(CR\(rsf\fP
 T}:T{
 .sp
 Add a form feed to the text at this point.
 T}
 T{
 .sp
-\f[CR]\(rs\(aq\fP
+\f(CR\(rs\*(Aq\fP
 T}:T{
 .sp
 Insert a single quotation mark into the text at this point.
 T}
 T{
 .sp
-\f[CR]\(rs"\fP
+\f(CR\(rs"\fP
 T}:T{
 .sp
 Insert a double quotation mark in the text at this point.
 T}
 T{
 .sp
-\f[CR]\(rs\fP\f[CR]\(rs\fP
+\f(CR\(rs\(rs\fP
 T}:T{
 .sp
 Add a "backslash" character to the text at this point.
@@ -476,10 +409,9 @@ T}
 .sp
 \fBtext/plain\fP
 .sp
-.if n \{\
-.RS 4
-.\}
+.if n .RS 4
 .nf
+.fam C
 \-\- \(rs
 \(rsn\(rs
 \(rsn\(rs
@@ -487,35 +419,31 @@ T}
 Footer default\(rsn\(rs
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\(rsn\(rs
 \(rsn
+.fam
 .fi
-.if n \{\
-.RE
-.\}
+.if n .RE
 .sp
 \fBtext/html\fP
 .sp
-.if n \{\
-.RS 4
-.\}
+.if n .RS 4
 .nf
+.fam C
 <br\(rs>\(rsn\(rs
 <br\(rs>\(rsn\(rs
-<span style=\(rs"font\-family:monospace; color:#000000\(rs">\-\-&amp;nbsp;</span><br>\(rsn\(rs
+<span style=\(rs"font\-family:monospace; color:#000000\(rs">\-\-&nbsp;</span><br>\(rsn\(rs
 <br\(rs>\(rsn\(rs
 <span style=\(rs"font\-family:monospace; color:#000000\(rs">Footer default</span><br>\(rsn\(rs
 <br\(rs>\(rsn\(rsn
+.fam
 .fi
-.if n \{\
-.RE
-.\}
+.if n .RE
 .SS "EXAMPLE"
 .sp
 Finally as an \fBexample\fP a \fBcomplete configuration file\fP:
 .sp
-.if n \{\
-.RS 4
-.\}
+.if n .RS 4
 .nf
+.fam C
 ################################################################################
 # JMilter Server for connections from an MTA to add a footer.
 #
@@ -542,7 +470,7 @@ Finally as an \fBexample\fP a \fBcomplete configuration file\fP:
 #         implied. See the License for the specific language governing
 #         permissions and limitations under the License..
 #
-# Copyright (c) 2018 Klaus Tachtler. All Rights Reserved.
+# Copyright (c) 2022 Klaus Tachtler. All Rights Reserved.
 # Klaus Tachtler. <klaus@tachtler.net>
 # http://www.tachtler.net
 #
@@ -560,27 +488,6 @@ listen = 127.0.0.1
 
 # Port to listen.
 port = 10099
-
-# Enable or disable TCP\-Logging by setting the following parameter:
-# true|false|yes|no|y|n (case insensitive)
-#
-# !IMPORTANT: Please set to false, true enables ONLY TCP\-Logging see:
-#             https://github.com/nightcode/jmilter
-#
-#             If you want do DEBUG the FooterMilter.jar itself, please use the
-#             parameter \-\-> \-d <\-\- as startup parameter as well!
-#
-logging = false
-
-# Set TCP\-Logging Log\-Level to INFO, WARN, ERROR, TRACE or DEBUG.
-# Only relevant if logging = true
-#
-# !IMPORTANT: Please set to INFO to see the TCP\-Logging, DEBUG will produce
-#             NO output. This is only for TCP\-Logging see:
-#             https://github.com/nightcode/jmilter
-#
-loglevel = INFO
-
 
 ################################################################################
 # [footer] section \- Configuration of the footers to be used.
@@ -603,7 +510,7 @@ loglevel = INFO
 #
 # ==============================================================================
 #
-# text/html : For a better configuration view for the text and html fields, it\(aqs
+# text/html : For a better configuration view for the text and html fields, it\*(Aqs
 #             possible to use a single \(rs (backslash) at the end of the line!
 #
 # EXAMPLE:    text = \-\- \(rs
@@ -615,7 +522,7 @@ loglevel = INFO
 #
 # ==============================================================================
 #
-# escape\(aqs  : Some escape sequences can be used, for more well formatted output!
+# escape\*(Aqs  : Some escape sequences can be used, for more well formatted output!
 #             Escape sequences description:
 #
 #             \(rst     Insert a tab in the text at this point.
@@ -623,9 +530,9 @@ loglevel = INFO
 #             \(rsn     Insert a newline in the text at this point.
 #             \(rsr     Insert a carriage return in the text at this point.
 #             \(rsf     Insert a formfeed in the text at this point.
-#             \(rs\(aq     Insert a single quote character in the text at this point.
+#             \(rs\*(Aq     Insert a single quote character in the text at this point.
 #             \(rs"     Insert a double quote character in the text at this point.
-#             \(rs\     Insert a backslash character in the text at this point.
+#             \(rs\(rs     Insert a backslash character in the text at this point.
 #
 ################################################################################
 
@@ -649,7 +556,7 @@ Footer default\(rsn\(rs
 # Footer for text/html.
 html = <br\(rs>\(rsn\(rs
 <br\(rs>\(rsn\(rs
-<span style=\(rs"font\-family:monospace; color:#000000\(rs">\-\-&amp;nbsp;</span><br>\(rsn\(rs
+<span style=\(rs"font\-family:monospace; color:#000000\(rs">\-\-&nbsp;</span><br>\(rsn\(rs
 <br\(rs>\(rsn\(rs
 <span style=\(rs"font\-family:monospace; color:#000000\(rs">Footer default</span><br>\(rsn\(rs
 <br\(rs>\(rsn\(rsn
@@ -668,13 +575,12 @@ from = user@example.com
 text = \-\- \(rsn\(rsn\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\(rsnFooter user\(rsn\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\(rsn\(rsn
 
 # Footer for text/html.
-html = <br\(rs>\(rsn<br\(rs>\(rsn<span style=\(rs"font\-family:monospace; color:#000000\(rs">\-\-&amp;nbsp;</span><br>\(rsn<br\(rs>\(rsn<span style=\(rs"font\-family:monospace; color:#000000\(rs">Footer user</span><br>\(rsn<br\(rs>\(rsn\(rsn
+html = <br\(rs>\(rsn<br\(rs>\(rsn<span style=\(rs"font\-family:monospace; color:#000000\(rs">\-\-&nbsp;</span><br>\(rsn<br\(rs>\(rsn<span style=\(rs"font\-family:monospace; color:#000000\(rs">Footer user</span><br>\(rsn<br\(rs>\(rsn\(rsn
 
 ################################################################################
+.fam
 .fi
-.if n \{\
-.RE
-.\}
+.if n .RE
 .SH "ENVIRONMENT"
 .sp
 \fIThere is only one dependency for the execution of FooterMilter\fP:
@@ -701,13 +607,9 @@ Refer to the \fBFooterMilter.jar\fP issue tracker at \c
 .URL "https://github.com/tachtler/FooterMilter" "" ""
 .SH "COPYING"
 .sp
-Copyright (C) 2018 Klaus Tachtler. Free use of this software is granted under the terms of the Apache License 2.0.
+Copyright (C) 2022 Klaus Tachtler. Free use of this software is granted under the terms of the Apache License 2.0.
 .sp
 Apache License Version 2.0, January 2004, \c
 .URL "http://www.apache.org/licenses/" "" ""
-.SH "AUTHOR(S)"
+.SH "AUTHOR"
 .sp
-\fBKlaus Tachtler\fP
-.RS 4
-Author(s).
-.RE
