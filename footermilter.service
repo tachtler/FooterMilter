@@ -4,6 +4,7 @@ Requires=network.target
 After=network.target
 
 [Service]
+SuccessExitStatus=143
 WorkingDirectory=/opt/FooterMilter
 ExecStart=/usr/bin/java -jar FooterMilter.jar -c footermilter.ini
 TimeoutStopSec=5
