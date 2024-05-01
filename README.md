@@ -56,16 +56,17 @@ which creates the following **directory structure**, which can be listed with th
 
 ```
 # ls -l /tmp/FooterMilter-master/
-total 56
--rw-r--r-- 1 root root  5741 Dec  4 07:00 footermilter.ini
--rw-r--r-- 1 root root 18871 Dec  4 07:00 FooterMilter.jar
--rw-r--r-- 1 root root   288 Dec  4 07:00 footermilter.service
-drwxr-xr-x 2 root root  4096 Dec  4 07:00 lib
--rw-r--r-- 1 root root 11357 Dec  4 07:00 LICENSE
--rw-r--r-- 1 root root  1676 Dec  4 07:00 log4j2.xml
-drwxr-xr-x 2 root root    24 Dec  4 07:00 META-INF
-drwxr-xr-x 3 root root    21 Dec  4 07:00 net
--rw-r--r-- 1 root root   864 Dec  4 07:00 README.md
+total 84
+drwxr-xr-x 2 klaus klaus  4096 Apr 20 12:14 doc
+-rw-r--r-- 1 klaus klaus  5028 Apr 21  2022 footermilter.ini
+-rw-r--r-- 1 klaus klaus 20199 Apr 20 12:14 FooterMilter.jar
+-rw-r--r-- 1 klaus klaus   311 Apr 21  2022 footermilter.service
+drwxr-xr-x 2 klaus klaus  4096 Apr 20 12:14 lib
+-rw-r--r-- 1 klaus klaus 11357 Apr 21  2022 LICENSE
+-rw-r--r-- 1 klaus klaus  1676 Apr 20 12:14 log4j2.xml
+drwxr-xr-x 2 klaus klaus  4096 Apr 21  2022 META-INF
+drwxr-xr-x 3 klaus klaus  4096 Apr 21  2022 net
+-rw-r--r-- 1 klaus klaus 20456 Apr 21  2022 README.md
 ```
 Whether the downloaded **Java** - `FooterMilter.jar` archive file is **executable** can be **tested with the following command** and should produce an output like the following one:
 
@@ -81,9 +82,9 @@ FooterMilter for Sendmail or Postfix to insert a footer at the end of the body.
  -h,--help           Print this usage information
  -v,--version        Version of the program
 
-Copyright (c) 2022 Klaus Tachtler, <klaus@tachtler.net>.
+Copyright (c) 2024 Klaus Tachtler, <klaus@tachtler.net>.
 All Rights Reserved.
-Version 1.1.
+Version 1.2.
 ```
 
 :exclamation: **IMPORTANT** - The **Java** - `FooterMilter.jar` archive file can **ONLY be executed** if the other files are also present in the described directory structure, **especially the directory** `lib` **and it's content, must be in the same directory !**
@@ -434,15 +435,12 @@ The following command can be used to query the status of the **FooterMilter** `s
 # systemctl status footermilter.service
 ● footermilter.service - FooterMilter Java Service
    Loaded: loaded (/usr/lib/systemd/system/footermilter.service; enabled; vendor preset: disabled)
-   Active: active (running) since Mon 2018-11-26 12:08:42 CET; 4s ago
- Main PID: 12118 (java)
+   Active: active (running) since Sat 2024-04-20 12:14:01 CEST; 2s ago
+ Main PID: 12731 (java)
    CGroup: /system.slice/footermilter.service
-           └─12118 /usr/bin/java -jar FooterMilter.jar -c footermilter.ini
+           └─12731 /usr/bin/java -jar FooterMilter.jar -c footermilter.ini
 
-Nov 26 12:08:42 server70.idmz.tachtler.net systemd[1]: Started FooterMilter J...
-Nov 26 12:08:42 server70.idmz.tachtler.net systemd[1]: Starting FooterMilter ...
-Nov 26 12:08:43 server70.idmz.tachtler.net java[12118]: Nov 26, 2018 12:08:43...
-Nov 26 12:08:43 server70.idmz.tachtler.net java[12118]: INFO: [MilterGatewayM...
+Apr 20 13:13:27 server70.idmz.tachtler.net systemd[1]: Started FooterMilter J...
 Hint: Some lines were ellipsized, use -l to show in full.
 ```
 
