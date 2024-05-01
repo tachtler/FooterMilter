@@ -1,18 +1,20 @@
 /**
- * Copyright (c) 2022 Klaus Tachtler. All Rights Reserved.
+ * Copyright (c) 2024 Klaus Tachtler. All Rights Reserved.
  * Klaus Tachtler. <klaus@tachtler.net>
  * http://www.tachtler.net
  */
 package net.tachtler.jmilter.FooterMilter;
 
-import java.net.UnknownHostException;
+import java.net.InetSocketAddress;
 
 import org.apache.commons.cli.ParseException;
-import org.nightcode.common.service.ServiceManager;
+
+import org.nightcode.milter.Actions;
 import org.nightcode.milter.MilterHandler;
+import org.nightcode.milter.ProtocolSteps;
 import org.nightcode.milter.net.MilterGatewayManager;
-import org.nightcode.milter.util.Actions;
-import org.nightcode.milter.util.ProtocolSteps;
+import org.nightcode.milter.net.ServerFactory;
+import org.nightcode.milter.util.NetUtils;
 
 /*******************************************************************************
  * JMilter Server for connections from an MTA.
@@ -40,7 +42,7 @@ import org.nightcode.milter.util.ProtocolSteps;
  *         implied. See the License for the specific language governing
  *         permissions and limitations under the License..
  * 
- *         Copyright (c) 2022 by Klaus Tachtler.
+ *         Copyright (c) 2024 by Klaus Tachtler.
  ******************************************************************************/
 public class FooterMilter {
 	
@@ -73,16 +75,15 @@ public class FooterMilter {
 		if (argsBean.getInetAddress() != null && argsBean.getPort() != 0) {
 			
 			// Variables.
-			StringBuffer address = new StringBuffer();
-			String config = "";
+			StringBuffer config = new StringBuffer();
 			
 			// Build listen address:port variable.
-			address.append(argsBean.getInetAddress().getHostAddress());
-			address.append(":");
-			address.append(argsBean.getPort());
+			config.append(argsBean.getInetAddress().getHostAddress());
+			config.append(":");
+			config.append(argsBean.getPort());
 			
-			// Generate configuration string.
-			config = System.getProperty("jmilter.address", address.toString());
+			// Generate InetSocketAddress with listen address and port.
+			InetSocketAddress address = NetUtils.parseAddress(System.getProperty("jmilter.address", config.toString()));
 
 			// Indicates what changes will be made with the messages.
 			Actions milterActions = Actions.builder().replaceBody().addHeader().build();
@@ -90,17 +91,18 @@ public class FooterMilter {
 			// Indicates which steps will be skipped.
 			ProtocolSteps milterProtocolSteps = ProtocolSteps.builder().build();
 
+			// Create the ServerFactory with the address and port information.
+			ServerFactory<InetSocketAddress> serverFactory = ServerFactory.tcpIpFactory(address);
+			
 			// Create the JMilter handler.
 			MilterHandler milterHandler = new FooterMilterHandler(milterActions, milterProtocolSteps, argsBean);
 
-			MilterGatewayManager gatewayManager;
-			try {
-				gatewayManager = new MilterGatewayManager(config, milterHandler, ServiceManager.instance());
-				gatewayManager.start();
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
+			// Create the JMilter gatewayManager.
+			try (
+			MilterGatewayManager<InetSocketAddress> gatewayManager = new MilterGatewayManager<>(serverFactory, milterHandler)) {
+				gatewayManager.bind();
 			}
-			
+					
 		}
 
 	}

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Klaus Tachtler. All Rights Reserved.
+ * Copyright (c) 2024 Klaus Tachtler. All Rights Reserved.
  * Klaus Tachtler. <klaus@tachtler.net>
  * http://www.tachtler.net
  */
@@ -9,8 +9,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.SocketException;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -34,6 +36,7 @@ import org.apache.james.mime4j.dom.field.ContentTypeField;
 import org.apache.james.mime4j.dom.field.FieldName;
 import org.apache.james.mime4j.message.DefaultMessageBuilder;
 import org.apache.james.mime4j.message.MessageImpl;
+import org.apache.james.mime4j.stream.MimeConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -41,10 +44,10 @@ import org.nightcode.milter.AbstractMilterHandler;
 import org.nightcode.milter.MessageModificationService;
 import org.nightcode.milter.MilterContext;
 import org.nightcode.milter.MilterException;
-import org.nightcode.milter.command.CommandProcessor;
-import org.nightcode.milter.net.MilterPacket;
-import org.nightcode.milter.util.Actions;
-import org.nightcode.milter.util.ProtocolSteps;
+import org.nightcode.milter.Actions;
+import org.nightcode.milter.CommandCode;
+import org.nightcode.milter.ProtocolSteps;
+import org.nightcode.milter.codec.MilterPacket;
 
 /*******************************************************************************
  * JMilter Handler for handling connections from an MTA to add a footer.
@@ -72,7 +75,7 @@ import org.nightcode.milter.util.ProtocolSteps;
  *         implied. See the License for the specific language governing
  *         permissions and limitations under the License..
  * 
- *         Copyright (c) 2022 by Klaus Tachtler.
+ *         Copyright (c) 2024 by Klaus Tachtler.
  ******************************************************************************/
 public class FooterMilterHandler extends AbstractMilterHandler {
 
@@ -80,6 +83,8 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 
 	private static int timeout = 3;
 	private static int ttl = 64;
+
+	private static String constCharSet = "charset=";
 
 	private String mailFrom = null;
 	private Boolean footerAvailableResult = null;
@@ -92,6 +97,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	private Body body = null;
 	private StringBuffer bodyContent = new StringBuffer();
 	private ContentTypeField contentTypeField = null;
+	private String charSet = "UTF-8";
 
 	private FooterMilterInitBean argsBean = new FooterMilterInitBean(null, 0, null, null);
 
@@ -137,14 +143,19 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	 * MilterContext, java.lang.String, java.net.InetAddress)
 	 */
 	@Override
-	public void connect(MilterContext context, String hostname, @Nullable InetAddress address) throws MilterException {
+	public void connect(MilterContext context, String hostname, int family, int port,
+			@Nullable SocketAddress socketAddress) throws MilterException {
 
 		log.debug("----------------------------------------: ");
 		log.debug(
 				"JMilter - ENTRY: connect                : MilterContext context, String hostname, @Nullable InetAddress address");
 		log.debug("----------------------------------------: ");
 
+		InetAddress address = ((InetSocketAddress) socketAddress).getAddress();
+
 		log.debug("*hostname                               : " + hostname);
+		log.debug("*family                                 : " + String.valueOf(family));
+		log.debug("*port                                   : " + String.valueOf(port));
 		log.debug("*address.getCanonicalHostName()         : " + address.getCanonicalHostName());
 		log.debug("*address.getHostAddress()               : " + address.getHostAddress());
 		log.debug("*address.getHostName()                  : " + address.getHostName());
@@ -245,7 +256,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		log.debug("*address.isSiteLocalAddress()           : " + address.isSiteLocalAddress());
 
 		logContext(context);
-		logContext(context, CommandProcessor.SMFIC_CONNECT);
+		logContext(context, CommandCode.SMFIC_CONNECT.code());
 
 		log.debug("----------------------------------------: ");
 		log.debug(
@@ -261,7 +272,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		 * context.sendPacket(MilterPacketUtil.SMFIS_CONTINUE);
 		 */
 
-		super.connect(context, hostname, address);
+		super.connect(context, hostname, family, port, socketAddress);
 	}
 
 	/*
@@ -280,8 +291,8 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		log.debug("*helohost                               : " + helohost);
 
 		logContext(context);
-		logContext(context, CommandProcessor.SMFIC_CONNECT);
-		logContext(context, CommandProcessor.SMFIC_HELO);
+		logContext(context, CommandCode.SMFIC_CONNECT.code());
+		logContext(context, CommandCode.SMFIC_HELO.code());
 
 		log.debug("----------------------------------------: ");
 		log.debug("JMilter - LEAVE: helo                   : MilterContext context, String helohost");
@@ -317,9 +328,9 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		}
 
 		logContext(context);
-		logContext(context, CommandProcessor.SMFIC_CONNECT);
-		logContext(context, CommandProcessor.SMFIC_HELO);
-		logContext(context, CommandProcessor.SMFIC_MAIL);
+		logContext(context, CommandCode.SMFIC_CONNECT.code());
+		logContext(context, CommandCode.SMFIC_HELO.code());
+		logContext(context, CommandCode.SMFIC_MAIL.code());
 
 		log.debug("----------------------------------------: ");
 		log.debug("JMilter - LEAVE: envfrom                : MilterContext context, List<String> from");
@@ -346,10 +357,10 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		}
 
 		logContext(context);
-		logContext(context, CommandProcessor.SMFIC_CONNECT);
-		logContext(context, CommandProcessor.SMFIC_HELO);
-		logContext(context, CommandProcessor.SMFIC_MAIL);
-		logContext(context, CommandProcessor.SMFIC_RCPT);
+		logContext(context, CommandCode.SMFIC_CONNECT.code());
+		logContext(context, CommandCode.SMFIC_HELO.code());
+		logContext(context, CommandCode.SMFIC_MAIL.code());
+		logContext(context, CommandCode.SMFIC_RCPT.code());
 
 		log.debug("----------------------------------------: ");
 		log.debug("JMilter - LEAVE: envrcpt                : MilterContext context, List<String> recipients");
@@ -385,11 +396,11 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		log.debug("*payload                                : " + dataPayloadString);
 
 		logContext(context);
-		logContext(context, CommandProcessor.SMFIC_CONNECT);
-		logContext(context, CommandProcessor.SMFIC_HELO);
-		logContext(context, CommandProcessor.SMFIC_MAIL);
-		logContext(context, CommandProcessor.SMFIC_RCPT);
-		logContext(context, CommandProcessor.SMFIC_DATA);
+		logContext(context, CommandCode.SMFIC_CONNECT.code());
+		logContext(context, CommandCode.SMFIC_HELO.code());
+		logContext(context, CommandCode.SMFIC_MAIL.code());
+		logContext(context, CommandCode.SMFIC_RCPT.code());
+		logContext(context, CommandCode.SMFIC_DATA.code());
 
 		log.debug("----------------------------------------: ");
 		log.debug("JMilter - LEAVE: data                   : MilterContext context, byte[] payload");
@@ -410,6 +421,44 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		log.debug("*isFooterAvailable (header)             : " + footerAvailableResult);
 
 		/*
+		 * Try to determine the CharSet from the header fields
+		 */
+		if (headerValue.contains(constCharSet)) {
+
+			String charSetDetect = null;
+
+			int lengthHeaderValue = headerValue.length();
+			int lengthConstCharSet = constCharSet.length();
+			int indexOfConstCharSet = headerValue.indexOf(constCharSet);
+			int indexOfBlankAfterIndexOfConstCharSet = headerValue.indexOf(" ",
+					indexOfConstCharSet + lengthConstCharSet);
+
+			log.debug("*headervalue                            : " + headerValue);
+			log.debug("*constCharSet                           : " + constCharSet);
+
+			log.debug("*->lengthHeaderValue                    : " + lengthHeaderValue);
+			log.debug("*->lengthConstCharSet                   : " + lengthConstCharSet);
+			log.debug("*->indexOfConstCharSet                  : " + indexOfConstCharSet);
+			log.debug("*->indexOfBlankAfterIndexOfConstCharSet : " + indexOfBlankAfterIndexOfConstCharSet);
+
+			if (indexOfBlankAfterIndexOfConstCharSet > -1) {
+				charSetDetect = headerValue
+						.subSequence((lengthConstCharSet + indexOfConstCharSet), indexOfBlankAfterIndexOfConstCharSet)
+						.toString();
+			} else {
+				charSetDetect = headerValue.subSequence((lengthConstCharSet + indexOfConstCharSet), lengthHeaderValue)
+						.toString();
+			}
+
+			log.debug("*->charSetDetect                        : " + charSetDetect);
+
+			charSet = charSetDetect.replaceAll(" ", "").replaceAll("\"", "").replaceAll("'", "").replaceAll(";", "")
+					.toUpperCase();
+		}
+
+		log.debug("*charSet                                : " + charSet);
+
+		/*
 		 * Check if the from email address is available inside the mapText or mapHtml.
 		 * If true, continue adding a foot, else do nothing.
 		 */
@@ -424,6 +473,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 			parseContent.append(System.lineSeparator());
 
 			log.debug("*parseContent.toString()                : " + parseContent.toString());
+			log.debug("*parseContent.toString().length()       : " + parseContent.toString().length());
 		}
 
 		log.debug("----------------------------------------: ");
@@ -434,12 +484,12 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		log.debug("*headerName: headerValue                : " + headerName + ": " + headerValue);
 
 		logContext(context);
-		logContext(context, CommandProcessor.SMFIC_CONNECT);
-		logContext(context, CommandProcessor.SMFIC_HELO);
-		logContext(context, CommandProcessor.SMFIC_MAIL);
-		logContext(context, CommandProcessor.SMFIC_RCPT);
-		logContext(context, CommandProcessor.SMFIC_DATA);
-		logContext(context, CommandProcessor.SMFIC_HEADER);
+		logContext(context, CommandCode.SMFIC_CONNECT.code());
+		logContext(context, CommandCode.SMFIC_HELO.code());
+		logContext(context, CommandCode.SMFIC_MAIL.code());
+		logContext(context, CommandCode.SMFIC_RCPT.code());
+		logContext(context, CommandCode.SMFIC_DATA.code());
+		logContext(context, CommandCode.SMFIC_HEADER.code());
 
 		log.debug("----------------------------------------: ");
 		log.debug(
@@ -463,13 +513,13 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		log.debug("----------------------------------------: ");
 
 		logContext(context);
-		logContext(context, CommandProcessor.SMFIC_CONNECT);
-		logContext(context, CommandProcessor.SMFIC_HELO);
-		logContext(context, CommandProcessor.SMFIC_MAIL);
-		logContext(context, CommandProcessor.SMFIC_RCPT);
-		logContext(context, CommandProcessor.SMFIC_DATA);
-		logContext(context, CommandProcessor.SMFIC_HEADER);
-		logContext(context, CommandProcessor.SMFIC_EOH);
+		logContext(context, CommandCode.SMFIC_CONNECT.code());
+		logContext(context, CommandCode.SMFIC_HELO.code());
+		logContext(context, CommandCode.SMFIC_MAIL.code());
+		logContext(context, CommandCode.SMFIC_RCPT.code());
+		logContext(context, CommandCode.SMFIC_DATA.code());
+		logContext(context, CommandCode.SMFIC_HEADER.code());
+		logContext(context, CommandCode.SMFIC_EOH.code());
 
 		log.debug("----------------------------------------: ");
 		log.debug("JMilter - LEAVE: eoh                    : MilterContext context");
@@ -485,7 +535,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	 * MilterContext, java.lang.String)
 	 */
 	@Override
-	public void body(MilterContext context, String bodyChunk) throws MilterException {
+	public void body(MilterContext context, byte[] bodyChunk) throws MilterException {
 
 		log.debug("*isFooterAvailable (body)               : " + footerAvailableResult);
 
@@ -499,9 +549,11 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 			 * Add the bodyChunk to the formated header lines to parseContent.
 			 */
 			parseContent.append(System.lineSeparator());
-			parseContent.append(bodyChunk);
+			parseContent.append(new String(bodyChunk, Charset.forName(charSet)));
 
+			log.debug("*charSet                                : " + charSet);
 			log.debug("*parseContent <- (Start at next line) ->: " + System.lineSeparator() + parseContent.toString());
+			log.debug("*parseContent.toString().length()       : " + parseContent.toString().length());
 
 		}
 
@@ -509,17 +561,18 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		log.debug("JMilter - ENTRY: body                   : MilterContext context, String bodyChunk");
 		log.debug("----------------------------------------: ");
 
-		log.debug("*bodyChunk <-- (Start at next line) --> : " + System.lineSeparator() + bodyChunk);
+		log.debug("*bodyChunk <-- (Start at next line) --> : " + System.lineSeparator()
+				+ new String(bodyChunk, Charset.forName(charSet)));
 
 		logContext(context);
-		logContext(context, CommandProcessor.SMFIC_CONNECT);
-		logContext(context, CommandProcessor.SMFIC_HELO);
-		logContext(context, CommandProcessor.SMFIC_MAIL);
-		logContext(context, CommandProcessor.SMFIC_RCPT);
-		logContext(context, CommandProcessor.SMFIC_DATA);
-		logContext(context, CommandProcessor.SMFIC_HEADER);
-		logContext(context, CommandProcessor.SMFIC_EOH);
-		logContext(context, CommandProcessor.SMFIC_BODY);
+		logContext(context, CommandCode.SMFIC_CONNECT.code());
+		logContext(context, CommandCode.SMFIC_HELO.code());
+		logContext(context, CommandCode.SMFIC_MAIL.code());
+		logContext(context, CommandCode.SMFIC_RCPT.code());
+		logContext(context, CommandCode.SMFIC_DATA.code());
+		logContext(context, CommandCode.SMFIC_HEADER.code());
+		logContext(context, CommandCode.SMFIC_EOH.code());
+		logContext(context, CommandCode.SMFIC_BODY.code());
 
 		log.debug("----------------------------------------: ");
 		log.debug("JMilter - LEAVE: body                   : MilterContext context, String bodyChunk");
@@ -535,7 +588,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	 * MilterContext, java.lang.String)
 	 */
 	@Override
-	public void eom(MilterContext context, @Nullable String bodyChunk) throws MilterException {
+	public void eom(MilterContext context, @Nullable byte[] bodyChunk) throws MilterException {
 
 		log.debug("*isFooterAvailable (eom)                : " + footerAvailableResult);
 
@@ -557,6 +610,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 				log.error("Caused by: " + ExceptionUtils.getStackTrace(eFooterMilterException));
 			}
 
+			log.debug("*charSet                                : " + charSet);
 			log.debug("*bodyContent.toString()                 : " + bodyContent.toString());
 
 			/*
@@ -569,14 +623,16 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 				/*
 				 * Copy the modified String into the bodyModified byte array.
 				 */
-				bodyModified = bodyContent.toString().getBytes(StandardCharsets.UTF_8);
+				bodyModified = bodyContent.toString().getBytes(Charset.forName(charSet));
 
 				/*
 				 * Replace the original body with the modified bodyModified byte array.
 				 */
 				messageModificationService.replaceBody(context, bodyModified);
 
-				log.debug("messageModificationService.replaceBody  : " + bodyModified.toString());
+				log.debug("*charSet                                : " + charSet);
+				log.debug("messageModificationService.replaceBody  : "
+						+ new String(bodyModified, Charset.forName(charSet)));
 
 				/*
 				 * Add the header tag for mail body modifying (using footer) - CR/LF
@@ -586,7 +642,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 				addHeaderContent.append(System.lineSeparator());
 				addHeaderContent.append("by ");
 				addHeaderContent
-						.append(context.getMacros(CommandProcessor.SMFIC_CONNECT).get("{daemon_name}").toString());
+						.append(context.getMacros(CommandCode.SMFIC_CONNECT.code()).get("{daemon_name}").toString());
 				addHeaderContent.append(System.lineSeparator());
 				addHeaderContent.append("for <");
 				addHeaderContent.append(mailFrom);
@@ -608,15 +664,15 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		log.debug("*bodyChunk <-- (Start at next line) --> : " + System.lineSeparator() + bodyChunk);
 
 		logContext(context);
-		logContext(context, CommandProcessor.SMFIC_CONNECT);
-		logContext(context, CommandProcessor.SMFIC_HELO);
-		logContext(context, CommandProcessor.SMFIC_MAIL);
-		logContext(context, CommandProcessor.SMFIC_RCPT);
-		logContext(context, CommandProcessor.SMFIC_DATA);
-		logContext(context, CommandProcessor.SMFIC_HEADER);
-		logContext(context, CommandProcessor.SMFIC_EOH);
-		logContext(context, CommandProcessor.SMFIC_BODY);
-		logContext(context, CommandProcessor.SMFIC_BODYEOB);
+		logContext(context, CommandCode.SMFIC_CONNECT.code());
+		logContext(context, CommandCode.SMFIC_HELO.code());
+		logContext(context, CommandCode.SMFIC_MAIL.code());
+		logContext(context, CommandCode.SMFIC_RCPT.code());
+		logContext(context, CommandCode.SMFIC_DATA.code());
+		logContext(context, CommandCode.SMFIC_HEADER.code());
+		logContext(context, CommandCode.SMFIC_EOH.code());
+		logContext(context, CommandCode.SMFIC_BODY.code());
+		logContext(context, CommandCode.SMFIC_EOB.code());
 
 		log.debug("----------------------------------------: ");
 		log.debug("JMilter - LEAVE: eom                    : MilterContext context, @Nullable String bodyChunk");
@@ -647,16 +703,16 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		log.debug("*packet                                 : " + packet);
 
 		logContext(context);
-		logContext(context, CommandProcessor.SMFIC_CONNECT);
-		logContext(context, CommandProcessor.SMFIC_HELO);
-		logContext(context, CommandProcessor.SMFIC_MAIL);
-		logContext(context, CommandProcessor.SMFIC_RCPT);
-		logContext(context, CommandProcessor.SMFIC_DATA);
-		logContext(context, CommandProcessor.SMFIC_HEADER);
-		logContext(context, CommandProcessor.SMFIC_EOH);
-		logContext(context, CommandProcessor.SMFIC_BODY);
-		logContext(context, CommandProcessor.SMFIC_BODYEOB);
-		logContext(context, CommandProcessor.SMFIC_ABORT);
+		logContext(context, CommandCode.SMFIC_CONNECT.code());
+		logContext(context, CommandCode.SMFIC_HELO.code());
+		logContext(context, CommandCode.SMFIC_MAIL.code());
+		logContext(context, CommandCode.SMFIC_RCPT.code());
+		logContext(context, CommandCode.SMFIC_DATA.code());
+		logContext(context, CommandCode.SMFIC_HEADER.code());
+		logContext(context, CommandCode.SMFIC_EOH.code());
+		logContext(context, CommandCode.SMFIC_BODY.code());
+		logContext(context, CommandCode.SMFIC_EOB.code());
+		logContext(context, CommandCode.SMFIC_ABORT.code());
 
 		log.debug("----------------------------------------: ");
 		log.debug("JMilter - LEAVE: abort                  : MilterContext context, MilterPacket packet");
@@ -682,7 +738,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	 * org.nightcode.milter.util.ProtocolSteps)
 	 */
 	@Override
-	public void negotiate(MilterContext context, int mtaProtocolVersion, Actions mtaActions,
+	public void optneg(MilterContext context, int mtaProtocolVersion, Actions mtaActions,
 			ProtocolSteps mtaProtocolSteps) throws MilterException {
 
 		log.debug("----------------------------------------: ");
@@ -695,24 +751,24 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		log.debug("*mtaProtocolSteps                       : " + mtaProtocolSteps);
 
 		logContext(context);
-		logContext(context, CommandProcessor.SMFIC_CONNECT);
-		logContext(context, CommandProcessor.SMFIC_HELO);
-		logContext(context, CommandProcessor.SMFIC_MAIL);
-		logContext(context, CommandProcessor.SMFIC_RCPT);
-		logContext(context, CommandProcessor.SMFIC_DATA);
-		logContext(context, CommandProcessor.SMFIC_HEADER);
-		logContext(context, CommandProcessor.SMFIC_EOH);
-		logContext(context, CommandProcessor.SMFIC_BODY);
-		logContext(context, CommandProcessor.SMFIC_BODYEOB);
-		logContext(context, CommandProcessor.SMFIC_ABORT);
-		logContext(context, CommandProcessor.SMFIC_OPTNEG);
+		logContext(context, CommandCode.SMFIC_CONNECT.code());
+		logContext(context, CommandCode.SMFIC_HELO.code());
+		logContext(context, CommandCode.SMFIC_MAIL.code());
+		logContext(context, CommandCode.SMFIC_RCPT.code());
+		logContext(context, CommandCode.SMFIC_DATA.code());
+		logContext(context, CommandCode.SMFIC_HEADER.code());
+		logContext(context, CommandCode.SMFIC_EOH.code());
+		logContext(context, CommandCode.SMFIC_BODY.code());
+		logContext(context, CommandCode.SMFIC_EOB.code());
+		logContext(context, CommandCode.SMFIC_ABORT.code());
+		logContext(context, CommandCode.SMFIC_OPTNEG.code());
 
 		log.debug("----------------------------------------: ");
 		log.debug(
 				"JMilter - LEAVE: negotiate              : MilterContext context, int mtaProtocolVersion, Actions mtaActions, ProtocolSteps mtaProtocolSteps");
 		log.debug("----------------------------------------: ");
 
-		super.negotiate(context, mtaProtocolVersion, mtaActions, mtaProtocolSteps);
+		super.optneg(context, mtaProtocolVersion, mtaActions, mtaProtocolSteps);
 	}
 
 	/*
@@ -742,18 +798,18 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		log.debug("*payload                                : " + dataPayloadString);
 
 		logContext(context);
-		logContext(context, CommandProcessor.SMFIC_CONNECT);
-		logContext(context, CommandProcessor.SMFIC_HELO);
-		logContext(context, CommandProcessor.SMFIC_MAIL);
-		logContext(context, CommandProcessor.SMFIC_RCPT);
-		logContext(context, CommandProcessor.SMFIC_DATA);
-		logContext(context, CommandProcessor.SMFIC_HEADER);
-		logContext(context, CommandProcessor.SMFIC_EOH);
-		logContext(context, CommandProcessor.SMFIC_BODY);
-		logContext(context, CommandProcessor.SMFIC_BODYEOB);
-		logContext(context, CommandProcessor.SMFIC_ABORT);
-		logContext(context, CommandProcessor.SMFIC_OPTNEG);
-		logContext(context, CommandProcessor.SMFIC_UNKNOWN);
+		logContext(context, CommandCode.SMFIC_CONNECT.code());
+		logContext(context, CommandCode.SMFIC_HELO.code());
+		logContext(context, CommandCode.SMFIC_MAIL.code());
+		logContext(context, CommandCode.SMFIC_RCPT.code());
+		logContext(context, CommandCode.SMFIC_DATA.code());
+		logContext(context, CommandCode.SMFIC_HEADER.code());
+		logContext(context, CommandCode.SMFIC_EOH.code());
+		logContext(context, CommandCode.SMFIC_BODY.code());
+		logContext(context, CommandCode.SMFIC_EOB.code());
+		logContext(context, CommandCode.SMFIC_ABORT.code());
+		logContext(context, CommandCode.SMFIC_OPTNEG.code());
+		logContext(context, CommandCode.SMFIC_UNKNOWN.code());
 
 		log.debug("----------------------------------------: ");
 		log.debug("JMilter - LEAVE: unknown                : MilterContext context, byte[] payload");
@@ -769,14 +825,30 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	 * org.nightcode.milter.MilterHandler#close(org.nightcode.milter.MilterContext)
 	 */
 	@Override
-	public void close(MilterContext arg0) {
+	public void quit(MilterContext context) {
+		log.debug("----------------------------------------: ");
+		log.debug("JMilter - ENTRY: quit                   : MilterContext context");
+		log.debug("----------------------------------------: ");
 
 		log.debug("----------------------------------------: ");
-		log.debug("JMilter - ENTRY: close                  : MilterContext arg0");
+		log.debug("JMilter - LEAVE: quit                   : MilterContext context");
+		log.debug("----------------------------------------: ");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.nightcode.milter.MilterHandler#close(org.nightcode.milter.MilterContext)
+	 */
+	@Override
+	public void quitNc(MilterContext context) {
+		log.debug("----------------------------------------: ");
+		log.debug("JMilter - ENTRY: quitNc                 : MilterContext context");
 		log.debug("----------------------------------------: ");
 
 		log.debug("----------------------------------------: ");
-		log.debug("JMilter - LEAVE: close                  : MilterContext arg0");
+		log.debug("JMilter - LEAVE: quitNc                 : MilterContext context");
 		log.debug("----------------------------------------: ");
 	}
 
@@ -808,7 +880,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		 * Initialize the mailFrom with the mail_addr from envfrom MILTER step and set
 		 * the footerAvailiableResult with false as "standard" values.
 		 */
-		mailFrom = context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString();
+		mailFrom = context.getMacros(CommandCode.SMFIC_MAIL.code()).get("{mail_addr}").toString();
 		footerAvailableResult = false;
 
 		log.debug("*mailFrom                        (init) : " + mailFrom);
@@ -886,8 +958,10 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		 * Generate the message parsing the parseContent with the messageBuilder.
 		 */
 		try {
+			((DefaultMessageBuilder) messageBuilder).setMimeEntityConfig(
+					new MimeConfig.Builder().setMaxLineLen(-1).setMaxHeaderLen(-1).setMaxHeaderCount(-1).build());
 			message = messageBuilder
-					.parseMessage(new ByteArrayInputStream(parseContent.toString().getBytes(StandardCharsets.UTF_8)));
+					.parseMessage(new ByteArrayInputStream(parseContent.toString().getBytes(Charset.forName(charSet))));
 		} catch (MimeException eMimeException) {
 			throw new FooterMilterException(false, eMimeException);
 		} catch (IOException eIOException) {
@@ -898,7 +972,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 		 * Start creating the modified body while iterating over all parts of the
 		 * message.
 		 */
-		createModifiedBody(message);
+		createModifiedBody(message, charSet);
 
 	}
 
@@ -907,24 +981,24 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	 * and add them to the bodyContent String. To iterate over the whole message, if
 	 * necessary, the code is calling itself.
 	 */
-	private void createModifiedBody(Entity entity) throws FooterMilterException {
+	private void createModifiedBody(Entity entity, String charSet) throws FooterMilterException {
 
 		body = entity.getBody();
 
 		if (body instanceof Multipart) {
 			createModifiedMultipartBody((Multipart) body);
 		} else if (body instanceof MessageImpl) {
-			createModifiedBody((MessageImpl) body);
+			createModifiedBody((MessageImpl) body, charSet);
 		} else if (body instanceof TextBody) {
 			if (entity.getMimeType().equalsIgnoreCase("text/plain")) {
-				bodyContent.append(
-						FooterMilterUtilities.getTextContentWithFooter(entity, argsBean.getMapText().get(mailFrom)));
+				bodyContent.append(FooterMilterUtilities.getTextContentWithFooter(entity,
+						argsBean.getMapText().get(mailFrom), charSet));
 			} else if (entity.getMimeType().equalsIgnoreCase("text/html")) {
-				bodyContent.append(
-						FooterMilterUtilities.getHtmlContentWithFooter(entity, argsBean.getMapHtml().get(mailFrom)));
+				bodyContent.append(FooterMilterUtilities.getHtmlContentWithFooter(entity,
+						argsBean.getMapHtml().get(mailFrom), charSet));
 			}
 		} else if (body instanceof BinaryBody) {
-			bodyContent.append(FooterMilterUtilities.getBinaryContent(entity));
+			bodyContent.append(FooterMilterUtilities.getBinaryContent(entity, charSet));
 		}
 
 	}
@@ -985,7 +1059,7 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 			/*
 			 * Add the recommended part from multipart to the bodyContent.
 			 */
-			createModifiedBody(part);
+			createModifiedBody(part, charSet);
 		}
 
 		/*
@@ -1059,169 +1133,144 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 	 */
 	private void logContext(MilterContext context, int smfic) {
 
-		switch (smfic) {
-		case CommandProcessor.SMFIC_CONNECT:
-			if (context.getMacros(CommandProcessor.SMFIC_CONNECT) != null) {
+		if (smfic == CommandCode.SMFIC_CONNECT.code()) {
+			if (context.getMacros(CommandCode.SMFIC_CONNECT.code()) != null) {
 				log.debug("*context.getMacros(SMIFC_CONNECT)       : "
-						+ context.getMacros(CommandProcessor.SMFIC_CONNECT));
+						+ context.getMacros(CommandCode.SMFIC_CONNECT.code()));
 
-				if (context.getMacros(CommandProcessor.SMFIC_CONNECT).containsKey("v")) {
+				if (context.getMacros(CommandCode.SMFIC_CONNECT.code()).containsKey("v")) {
 					log.debug("*context.getMacros(SMIFC_CONNECT)|(\"v\") : "
-							+ context.getMacros(CommandProcessor.SMFIC_CONNECT).get("v").toString());
+							+ context.getMacros(CommandCode.SMFIC_CONNECT.code()).get("v").toString());
 				}
-				if (context.getMacros(CommandProcessor.SMFIC_CONNECT).containsKey("{daemon_name}")) {
+				if (context.getMacros(CommandCode.SMFIC_CONNECT.code()).containsKey("{daemon_name}")) {
 					log.debug("*context.getMacros(SMIFC_CONNECT)|(\"{...: "
-							+ context.getMacros(CommandProcessor.SMFIC_CONNECT).get("{daemon_name}").toString());
+							+ context.getMacros(CommandCode.SMFIC_CONNECT.code()).get("{daemon_name}").toString());
 				}
-				if (context.getMacros(CommandProcessor.SMFIC_CONNECT).containsKey("j")) {
+				if (context.getMacros(CommandCode.SMFIC_CONNECT.code()).containsKey("j")) {
 					log.debug("*context.getMacros(SMIFC_CONNECT)|(\"j\") : "
-							+ context.getMacros(CommandProcessor.SMFIC_CONNECT).get("j").toString());
+							+ context.getMacros(CommandCode.SMFIC_CONNECT.code()).get("j").toString());
 				}
 			}
-
-			break;
-		case CommandProcessor.SMFIC_HELO:
-			if (context.getMacros(CommandProcessor.SMFIC_HELO) != null) {
-				log.debug(
-						"*context.getMacros(SMIFC_HELO)          : " + context.getMacros(CommandProcessor.SMFIC_HELO));
+		} else if (smfic == CommandCode.SMFIC_HELO.code()) {
+			if (context.getMacros(CommandCode.SMFIC_HELO.code()) != null) {
+				log.debug("*context.getMacros(SMIFC_HELO)          : "
+						+ context.getMacros(CommandCode.SMFIC_HELO.code()));
 			}
+		} else if (smfic == CommandCode.SMFIC_MAIL.code()) {
+			if (context.getMacros(CommandCode.SMFIC_MAIL.code()) != null) {
+				log.debug("*context.getMacros(SMIFC_MAIL)          : "
+						+ context.getMacros(CommandCode.SMFIC_MAIL.code()));
 
-			break;
-		case CommandProcessor.SMFIC_MAIL:
-			if (context.getMacros(CommandProcessor.SMFIC_MAIL) != null) {
-				log.debug(
-						"*context.getMacros(SMIFC_MAIL)          : " + context.getMacros(CommandProcessor.SMFIC_MAIL));
-
-				if (context.getMacros(CommandProcessor.SMFIC_MAIL).containsKey("{mail_host}")) {
+				if (context.getMacros(CommandCode.SMFIC_MAIL.code()).containsKey("{mail_host}")) {
 					log.debug("*context.getMacros(SMIFC_MAIL)|(\"{mai...: "
-							+ context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_host}").toString());
+							+ context.getMacros(CommandCode.SMFIC_MAIL.code()).get("{mail_host}").toString());
 				}
-				if (context.getMacros(CommandProcessor.SMFIC_MAIL).containsKey("{mail_mailer}")) {
+				if (context.getMacros(CommandCode.SMFIC_MAIL.code()).containsKey("{mail_mailer}")) {
 					log.debug("*context.getMacros(SMIFC_MAIL)|(\"{mai...: "
-							+ context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_mailer}").toString());
+							+ context.getMacros(CommandCode.SMFIC_MAIL.code()).get("{mail_mailer}").toString());
 				}
-				if (context.getMacros(CommandProcessor.SMFIC_MAIL).containsKey("{mail_addr}")) {
+				if (context.getMacros(CommandCode.SMFIC_MAIL.code()).containsKey("{mail_addr}")) {
 					log.debug("*context.getMacros(SMIFC_MAIL)|(\"{mai...: "
-							+ context.getMacros(CommandProcessor.SMFIC_MAIL).get("{mail_addr}").toString());
+							+ context.getMacros(CommandCode.SMFIC_MAIL.code()).get("{mail_addr}").toString());
 				}
 			}
+		} else if (smfic == CommandCode.SMFIC_RCPT.code()) {
+			if (context.getMacros(CommandCode.SMFIC_RCPT.code()) != null) {
+				log.debug("*context.getMacros(SMIFC_RCPT)          : "
+						+ context.getMacros(CommandCode.SMFIC_RCPT.code()));
 
-			break;
-		case CommandProcessor.SMFIC_RCPT:
-			if (context.getMacros(CommandProcessor.SMFIC_RCPT) != null) {
-				log.debug(
-						"*context.getMacros(SMIFC_RCPT)          : " + context.getMacros(CommandProcessor.SMFIC_RCPT));
-
-				if (context.getMacros(CommandProcessor.SMFIC_RCPT).containsKey("{rcpt_mailer}")) {
+				if (context.getMacros(CommandCode.SMFIC_RCPT.code()).containsKey("{rcpt_mailer}")) {
 					log.debug("*context.getMacros(SMIFC_RCPT)|(\"{rcp...: "
-							+ context.getMacros(CommandProcessor.SMFIC_RCPT).get("{rcpt_mailer}").toString());
+							+ context.getMacros(CommandCode.SMFIC_RCPT.code()).get("{rcpt_mailer}").toString());
 				}
-				if (context.getMacros(CommandProcessor.SMFIC_RCPT).containsKey("{rcpt_addr}")) {
+				if (context.getMacros(CommandCode.SMFIC_RCPT.code()).containsKey("{rcpt_addr}")) {
 					log.debug("*context.getMacros(SMIFC_RCPT)|(\"{rcp...: "
-							+ context.getMacros(CommandProcessor.SMFIC_RCPT).get("{rcpt_addr}").toString());
+							+ context.getMacros(CommandCode.SMFIC_RCPT.code()).get("{rcpt_addr}").toString());
 				}
-				if (context.getMacros(CommandProcessor.SMFIC_RCPT).containsKey("{rcpt_host}")) {
+				if (context.getMacros(CommandCode.SMFIC_RCPT.code()).containsKey("{rcpt_host}")) {
 					log.debug("*context.getMacros(SMIFC_RCPT)|(\"{rcp...: "
-							+ context.getMacros(CommandProcessor.SMFIC_RCPT).get("{rcpt_host}").toString());
+							+ context.getMacros(CommandCode.SMFIC_RCPT.code()).get("{rcpt_host}").toString());
 				}
-				if (context.getMacros(CommandProcessor.SMFIC_RCPT).containsKey("i")) {
+				if (context.getMacros(CommandCode.SMFIC_RCPT.code()).containsKey("i")) {
 					log.debug("*context.getMacros(SMIFC_RCPT)|(\"i\")    : "
-							+ context.getMacros(CommandProcessor.SMFIC_RCPT).get("i").toString());
+							+ context.getMacros(CommandCode.SMFIC_RCPT.code()).get("i").toString());
 				}
 			}
+		} else if (smfic == CommandCode.SMFIC_DATA.code()) {
+			if (context.getMacros(CommandCode.SMFIC_DATA.code()) != null) {
+				log.debug("*context.getMacros(SMIFC_DATA)          : "
+						+ context.getMacros(CommandCode.SMFIC_DATA.code()));
 
-			break;
-		case CommandProcessor.SMFIC_DATA:
-			if (context.getMacros(CommandProcessor.SMFIC_DATA) != null) {
-				log.debug(
-						"*context.getMacros(SMIFC_DATA)          : " + context.getMacros(CommandProcessor.SMFIC_DATA));
-
-				if (context.getMacros(CommandProcessor.SMFIC_DATA).containsKey("i")) {
+				if (context.getMacros(CommandCode.SMFIC_DATA.code()).containsKey("i")) {
 					log.debug("*context.getMacros(SMIFC_DATA)|(\"i\")    : "
-							+ context.getMacros(CommandProcessor.SMFIC_DATA).get("i").toString());
+							+ context.getMacros(CommandCode.SMFIC_DATA.code()).get("i").toString());
 				}
 			}
-
-			break;
-		case CommandProcessor.SMFIC_HEADER:
-			if (context.getMacros(CommandProcessor.SMFIC_HEADER) != null) {
+		} else if (smfic == CommandCode.SMFIC_HEADER.code()) {
+			if (context.getMacros(CommandCode.SMFIC_HEADER.code()) != null) {
 				log.debug("*context.getMacros(SMFIC_HEADER)        : "
-						+ context.getMacros(CommandProcessor.SMFIC_HEADER));
+						+ context.getMacros(CommandCode.SMFIC_HEADER.code()));
 
-				if (context.getMacros(CommandProcessor.SMFIC_HEADER).containsKey("i")) {
+				if (context.getMacros(CommandCode.SMFIC_HEADER.code()).containsKey("i")) {
 					log.debug("*context.getMacros(SMIFC_HEADER)|(\"i\")  : "
-							+ context.getMacros(CommandProcessor.SMFIC_HEADER).get("i").toString());
+							+ context.getMacros(CommandCode.SMFIC_HEADER.code()).get("i").toString());
 				}
 			}
+		} else if (smfic == CommandCode.SMFIC_EOH.code()) {
+			if (context.getMacros(CommandCode.SMFIC_EOH.code()) != null) {
+				log.debug(
+						"*context.getMacros(SMFIC_EOH)           : " + context.getMacros(CommandCode.SMFIC_EOH.code()));
 
-			break;
-		case CommandProcessor.SMFIC_EOH:
-			if (context.getMacros(CommandProcessor.SMFIC_EOH) != null) {
-				log.debug("*context.getMacros(SMFIC_EOH)           : " + context.getMacros(CommandProcessor.SMFIC_EOH));
-
-				if (context.getMacros(CommandProcessor.SMFIC_EOH).containsKey("i")) {
+				if (context.getMacros(CommandCode.SMFIC_EOH.code()).containsKey("i")) {
 					log.debug("*context.getMacros(SMIFC_EOH)|(\"i\")     : "
-							+ context.getMacros(CommandProcessor.SMFIC_EOH).get("i").toString());
+							+ context.getMacros(CommandCode.SMFIC_EOH.code()).get("i").toString());
 				}
 			}
+		} else if (smfic == CommandCode.SMFIC_BODY.code()) {
+			if (context.getMacros(CommandCode.SMFIC_BODY.code()) != null) {
+				log.debug("*context.getMacros(SMIFC_BODY)          : "
+						+ context.getMacros(CommandCode.SMFIC_BODY.code()));
 
-			break;
-		case CommandProcessor.SMFIC_BODY:
-			if (context.getMacros(CommandProcessor.SMFIC_BODY) != null) {
-				log.debug(
-						"*context.getMacros(SMIFC_BODY)          : " + context.getMacros(CommandProcessor.SMFIC_BODY));
-
-				if (context.getMacros(CommandProcessor.SMFIC_BODY).containsKey("i")) {
+				if (context.getMacros(CommandCode.SMFIC_BODY.code()).containsKey("i")) {
 					log.debug("*context.getMacros(SMIFC_BODY)|(\"i\")    : "
-							+ context.getMacros(CommandProcessor.SMFIC_BODY).get("i").toString());
+							+ context.getMacros(CommandCode.SMFIC_BODY.code()).get("i").toString());
 				}
 			}
+		} else if (smfic == CommandCode.SMFIC_EOB.code()) {
+			if (context.getMacros(CommandCode.SMFIC_EOB.code()) != null) {
+				log.debug("*context.getMacros(SMIFC_EOB)           : " + context.getMacros(CommandCode.SMFIC_EOB.code()));
 
-			break;
-		case CommandProcessor.SMFIC_BODYEOB:
-			if (context.getMacros(CommandProcessor.SMFIC_BODYEOB) != null) {
-				log.debug("*context.getMacros(SMIFC_BODYEOB)       : "
-						+ context.getMacros(CommandProcessor.SMFIC_BODYEOB));
-
-				if (context.getMacros(CommandProcessor.SMFIC_BODYEOB).containsKey("i")) {
-					log.debug("*context.getMacros(SMIFC_BODYEOB)|(\"i\") : "
-							+ context.getMacros(CommandProcessor.SMFIC_BODYEOB).get("i").toString());
+				if (context.getMacros(CommandCode.SMFIC_EOB.code()).containsKey("i")) {
+					log.debug("*context.getMacros(SMIFC_EOB)|(\"i\")     : "
+							+ context.getMacros(CommandCode.SMFIC_EOB.code()).get("i").toString());
 				}
 			}
+		} else if (smfic == CommandCode.SMFIC_ABORT.code()) {
+			if (context.getMacros(CommandCode.SMFIC_ABORT.code()) != null) {
+				log.debug("*context.getMacros(SMIFC_ABORT)         : "
+						+ context.getMacros(CommandCode.SMFIC_ABORT.code()));
 
-			break;
-		case CommandProcessor.SMFIC_ABORT:
-			if (context.getMacros(CommandProcessor.SMFIC_ABORT) != null) {
-				log.debug(
-						"*context.getMacros(SMIFC_ABORT)         : " + context.getMacros(CommandProcessor.SMFIC_ABORT));
-
-				if (context.getMacros(CommandProcessor.SMFIC_ABORT).containsKey("i")) {
+				if (context.getMacros(CommandCode.SMFIC_ABORT.code()).containsKey("i")) {
 					log.debug("*context.getMacros(SMIFC_ABORT)|(\"i\")   : "
-							+ context.getMacros(CommandProcessor.SMFIC_ABORT).get("i").toString());
+							+ context.getMacros(CommandCode.SMFIC_ABORT.code()).get("i").toString());
 				}
 			}
-
-			break;
-		case CommandProcessor.SMFIC_OPTNEG:
-			if (context.getMacros(CommandProcessor.SMFIC_OPTNEG) != null) {
+		} else if (smfic == CommandCode.SMFIC_OPTNEG.code()) {
+			if (context.getMacros(CommandCode.SMFIC_OPTNEG.code()) != null) {
 				log.debug("*context.getMacros(SMFIC_OPTNEG)        : "
-						+ context.getMacros(CommandProcessor.SMFIC_OPTNEG));
+						+ context.getMacros(CommandCode.SMFIC_OPTNEG.code()));
 
-				if (context.getMacros(CommandProcessor.SMFIC_OPTNEG).containsKey("i")) {
+				if (context.getMacros(CommandCode.SMFIC_OPTNEG.code()).containsKey("i")) {
 					log.debug("*context.getMacros(SMFIC_OPTNEG)|(\"i\")  : "
-							+ context.getMacros(CommandProcessor.SMFIC_OPTNEG).get("i").toString());
+							+ context.getMacros(CommandCode.SMFIC_OPTNEG.code()).get("i").toString());
 				}
 			}
-
-			break;
-		case CommandProcessor.SMFIC_UNKNOWN:
-			if (context.getMacros(CommandProcessor.SMFIC_UNKNOWN) != null) {
+		} else if (smfic == CommandCode.SMFIC_UNKNOWN.code()) {
+			if (context.getMacros(CommandCode.SMFIC_UNKNOWN.code()) != null) {
 				log.debug("*context.getMacros(SMFIC_UNKNOWN)       : "
-						+ context.getMacros(CommandProcessor.SMFIC_UNKNOWN));
+						+ context.getMacros(CommandCode.SMFIC_UNKNOWN.code()));
 			}
-
-			break;
-		default:
+		} else {
 			if (context != null) {
 				log.debug("*context.getMtaProtocolVersion()        : " + context.getMtaProtocolVersion());
 				log.debug("*context.getSessionProtocolVersion()    : " + context.getSessionProtocolVersion());
@@ -1232,13 +1281,11 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 				log.debug("*context.getMtaActions()                : " + context.getMtaActions());
 				log.debug("*context.getMtaProtocolSteps()          : " + context.getMtaProtocolSteps());
 				log.debug("*context.getSessionProtocolSteps()      : " + context.getSessionProtocolSteps());
-				log.debug("*context.getSessionState()              : " + context.getSessionState());
+				log.debug("*context.getSessionStep()               : " + context.getSessionStep());
 				log.debug("*context.id()                           : " + context.id());
 				log.debug("*context.milterActions()                : " + context.milterActions());
 				log.debug("*context.milterProtocolSteps()          : " + context.milterProtocolSteps());
 			}
-
-			break;
 		}
 
 	}

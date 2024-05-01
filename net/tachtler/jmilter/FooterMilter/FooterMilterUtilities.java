@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Klaus Tachtler. All Rights Reserved.
+ * Copyright (c) 2024 Klaus Tachtler. All Rights Reserved.
  * Klaus Tachtler. <klaus@tachtler.net>
  * http://www.tachtler.net
  */
@@ -7,7 +7,7 @@ package net.tachtler.jmilter.FooterMilter;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.QuotedPrintableCodec;
@@ -50,7 +50,7 @@ import io.netty.handler.codec.base64.Base64;
  *         implied. See the License for the specific language governing
  *         permissions and limitations under the License..
  * 
- *         Copyright (c) 2022 by Klaus Tachtler.
+ *         Copyright (c) 2024 by Klaus Tachtler.
  ******************************************************************************/
 public class FooterMilterUtilities {
 
@@ -82,10 +82,11 @@ public class FooterMilterUtilities {
 	 * @param footer
 	 * @return String
 	 */
-	public static String getTextContentWithFooter(Entity entity, String footer) throws FooterMilterException {
+	public static String getTextContentWithFooter(Entity entity, String footer, String charSet)
+			throws FooterMilterException {
 		stringBuffer.delete(0, stringBuffer.length());
 
-		stringBuffer.append(FooterMilterUtilities.getTextBody(entity));
+		stringBuffer.append(FooterMilterUtilities.getTextBody(entity, charSet));
 		stringBuffer.append(System.lineSeparator());
 
 		log.debug("*entity.getDispositionType()            : " + entity.getDispositionType());
@@ -141,7 +142,8 @@ public class FooterMilterUtilities {
 	 * @param footer
 	 * @return String
 	 */
-	public static String getHtmlContentWithFooter(Entity entity, String footer) throws FooterMilterException {
+	public static String getHtmlContentWithFooter(Entity entity, String footer, String charSet)
+			throws FooterMilterException {
 		stringBuffer.delete(0, stringBuffer.length());
 		entityTextBody = null;
 
@@ -153,7 +155,7 @@ public class FooterMilterUtilities {
 		 * the well formed HTML content. If it's false, add the HTML content at the end
 		 * of the multipart part.
 		 */
-		entityTextBody = FooterMilterUtilities.getTextBody(entity);
+		entityTextBody = FooterMilterUtilities.getTextBody(entity, charSet);
 
 		if (entityTextBody.indexOf("</body>") != -1) {
 			String[] splitString = entityTextBody.split("</body>");
@@ -227,10 +229,10 @@ public class FooterMilterUtilities {
 	 * @param entity
 	 * @return String
 	 */
-	public static String getBinaryContent(Entity entity) throws FooterMilterException {
+	public static String getBinaryContent(Entity entity, String charSet) throws FooterMilterException {
 		stringBuffer.delete(0, stringBuffer.length());
 
-		stringBuffer.append(FooterMilterUtilities.getBinaryBody(entity));
+		stringBuffer.append(FooterMilterUtilities.getBinaryBody(entity, charSet));
 		stringBuffer.append(System.lineSeparator());
 
 		log.debug("Content-Type: \"binary-content\"          : " + stringBuffer.toString());
@@ -244,9 +246,9 @@ public class FooterMilterUtilities {
 	 * @param entity
 	 * @return String
 	 */
-	public static String getTextBody(Entity entity) throws FooterMilterException {
+	public static String getTextBody(Entity entity, String charSet) throws FooterMilterException {
 		TextBody textBody = (TextBody) entity.getBody();
-		return getBody(entity, textBody);
+		return getBody(entity, textBody, charSet);
 	}
 
 	/**
@@ -255,9 +257,9 @@ public class FooterMilterUtilities {
 	 * @param part
 	 * @return String
 	 */
-	public static String getBinaryBody(Entity entity) throws FooterMilterException {
+	public static String getBinaryBody(Entity entity, String charSet) throws FooterMilterException {
 		BinaryBody binaryBody = (BinaryBody) entity.getBody();
-		return getBody(entity, binaryBody);
+		return getBody(entity, binaryBody, charSet);
 	}
 
 	/**
@@ -273,7 +275,7 @@ public class FooterMilterUtilities {
 	 * @param body
 	 * @return String
 	 */
-	private static String getBody(Entity entity, Body body) throws FooterMilterException {
+	private static String getBody(Entity entity, Body body, String charSet) throws FooterMilterException {
 		String bodyString = null;
 		try {
 			InputStream inputStream = ((SingleBody) body).getInputStream();
@@ -282,7 +284,7 @@ public class FooterMilterUtilities {
 			if (entity.getContentTransferEncoding().equalsIgnoreCase("base64")) {
 				ByteBuf byteBuf = Unpooled.buffer(bytes.length);
 				byteBuf.writeBytes(bytes);
-				bodyString = Base64.encode(byteBuf, true).toString(StandardCharsets.UTF_8);
+				bodyString = Base64.encode(byteBuf, true).toString(Charset.forName(charSet));
 			} else if (entity.getContentTransferEncoding().equalsIgnoreCase("quoted-printable")) {
 				bodyString = createQuotedPrintable(new String(bytes));
 			} else {
