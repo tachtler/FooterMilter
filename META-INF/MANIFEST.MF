@@ -1,23 +1,26 @@
 Manifest-Version: 1.0
 Class-Path: . 
- lib/apache-mime4j-core-0.8.2.jar 
- lib/apache-mime4j-dom-0.8.2.jar 
- lib/apache-mime4j-storage-0.8.2.jar 
- lib/commons-cli-1.5.0.jar 
- lib/commons-codec-1.15.jar 
- lib/commons-io-2.11.0.jar 
- lib/commons-lang3-3.12.0.jar 
- lib/commons-logging-1.2.jar 
+ lib/apache-mime4j-core-0.8.11.jar 
+ lib/apache-mime4j-dom-0.8.11.jar 
+ lib/apache-mime4j-storage-0.8.11.jar 
+ lib/commons-cli-1.6.0.jar 
+ lib/commons-codec-1.16.1.jar 
+ lib/commons-io-2.16.1.jar 
+ lib/commons-lang3-3.14.0.jar 
+ lib/commons-logging-1.3.1.jar 
  lib/ini4j-0.5.4.jar 
  lib/javax.inject.jar 
- lib/jmilter-0.3.6.jar 
+ lib/jmilter-0.6.jar 
  lib/jsr305-3.0.2.jar 
- lib/log4j-api-2.17.2.jar 
- lib/log4j-core-2.17.2.jar 
- lib/netty-buffer-4.1.76.Final.jar 
- lib/netty-codec-4.1.76.Final.jar 
- lib/netty-common-4.1.76.Final.jar 
- lib/netty-handler-4.1.76.Final.jar 
- lib/netty-transport-4.1.76.Final.jar 
- lib/yaranga-0.11.jar 
+ lib/log4j-api-2.23.1.jar 
+ lib/log4j-core-2.23.1.jar 
+ lib/netty-buffer-4.1.109.Final.jar 
+ lib/netty-codec-4.1.109.Final.jar 
+ lib/netty-common-4.1.109.Final.jar 
+ lib/netty-handler-4.1.109.Final.jar 
+ lib/netty-transport-4.1.109.Final.jar 
+ lib/netty-resolver-4.1.109.Final.jar 
+ lib/netty-transport-native-epoll-4.1.109.Final-linux-x86_64.jar 
+ lib/netty-transport-native-unix-common-4.1.109.Final.jar 
+ lib/netty-transport-classes-epoll-4.1.109.Final.jar 
 Main-Class: net.tachtler.jmilter.FooterMilter.FooterMilter 
