@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
         <Properties>
-                <Property name="baseDir">/var/log/FooterMilter</Property>
+                <Property name="baseDir">/var/log/footermilter</Property>
         </Properties>
         <Appenders>
                 <Console name="Console" target="SYSTEM_OUT">
@@ -9,8 +9,8 @@
                                 pattern="%d{DEFAULT} [%-5p] [%-40C{1}] [%-40M] %m%n" />
                 </Console>
                 <RollingFile name="RollingFile"
-                        fileName="${baseDir}/FooterMilter.log"
-                        filePattern="${baseDir}/$${date:yyyy-MM}/FooterMilter-%d{MM-dd-yyyy}-%i.log.gz">
+                        fileName="${baseDir}/footermilter.log"
+                        filePattern="${baseDir}/$${date:yyyy-MM}/footermilter-%d{MM-dd-yyyy}-%i.log.gz">
                         <PatternLayout
                                 pattern="%d{DEFAULT} [%-5p] [%-40C{1}] [%-40M] %m%n" />
                         <Policies>
@@ -20,7 +20,7 @@
                         </Policies>
                         <DefaultRolloverStrategy>
                                 <Delete basePath="${baseDir}" maxDepth="3">
-                                        <IfFileName glob="*/FooterMilter-*.log.gz" />
+                                        <IfFileName glob="*/footermilter-*.log.gz" />
                                         <IfLastModified age="31d" />
                                 </Delete>
                         </DefaultRolloverStrategy>
