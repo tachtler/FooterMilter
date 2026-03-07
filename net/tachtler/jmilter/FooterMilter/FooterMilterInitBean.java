@@ -1,12 +1,11 @@
 /**
- * Copyright (c) 2022 Klaus Tachtler. All Rights Reserved.
+ * Copyright (c) 2026 Klaus Tachtler. All Rights Reserved.
  * Klaus Tachtler. <klaus@tachtler.net>
  * http://www.tachtler.net
  */
 package net.tachtler.jmilter.FooterMilter;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 
 /*******************************************************************************
@@ -28,12 +27,12 @@ import java.util.HashMap;
  *         implied. See the License for the specific language governing
  *         permissions and limitations under the License..
  * 
- *         Copyright (c) 2022 by Klaus Tachtler.
+ *         Copyright (c) 2026 by Klaus Tachtler.
  ******************************************************************************/
 public class FooterMilterInitBean {
 
 	/**
-	 * Returns the IPv4-Address.
+	 * Returns the IP-Address.
 	 */
 	private InetAddress inetAddress;
 
@@ -60,8 +59,8 @@ public class FooterMilterInitBean {
 		super();
 		this.inetAddress = inetAddress;
 		this.port = port;
-		this.mapText.clear();
-		this.mapHtml.clear();
+		this.mapText = mapText;
+	    this.mapHtml = mapHtml;
 	}
 
 	/**
@@ -70,13 +69,10 @@ public class FooterMilterInitBean {
 	 * @throws FooterMilterException
 	 */
 	public final void init() throws FooterMilterException {
-		try {
-			this.inetAddress = InetAddress.getByName("127.0.0.1");
-		} catch (UnknownHostException eUnknownHostException) {
-			throw new FooterMilterException(true, eUnknownHostException);
-		}
-
+		InetAddress.getLoopbackAddress();
 		this.port = 10099;
+		this.mapText.clear();
+		this.mapHtml.clear();
 	}
 
 	/**
