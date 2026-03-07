@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
         <Properties>
-                <Property name="baseDir">/var/log/footermilter</Property>
+                <Property name="baseDir" value="/var/log/FooterMilter" />
         </Properties>
         <Appenders>
                 <Console name="Console" target="SYSTEM_OUT">
@@ -9,8 +9,8 @@
                                 pattern="%d{DEFAULT} [%-5p] [%-40C{1}] [%-40M] %m%n" />
                 </Console>
                 <RollingFile name="RollingFile"
-                        fileName="${baseDir}/footermilter.log"
-                        filePattern="${baseDir}/$${date:yyyy-MM}/footermilter-%d{MM-dd-yyyy}-%i.log.gz">
+                        fileName="${baseDir}/FooterMilter.log"
+                        filePattern="${baseDir}/$${date:yyyy-MM}/footermilter-%d{yyyy-MM-dd-HH-mm-ss}-%i.log.gz">
                         <PatternLayout
                                 pattern="%d{DEFAULT} [%-5p] [%-40C{1}] [%-40M] %m%n" />
                         <Policies>
@@ -27,7 +27,7 @@
                 </RollingFile>
         </Appenders>
         <Loggers>
-                <Root level="info">
+                <Root level="INFO">
                         <AppenderRef ref="Console" />
                         <AppenderRef ref="RollingFile" />
                 </Root>
