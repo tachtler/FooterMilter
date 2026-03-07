@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024 Klaus Tachtler. All Rights Reserved.
+ * Copyright (c) 2026 Klaus Tachtler. All Rights Reserved.
  * Klaus Tachtler. <klaus@tachtler.net>
  * http://www.tachtler.net
  */
@@ -75,7 +75,7 @@ import org.nightcode.milter.codec.MilterPacket;
  *         implied. See the License for the specific language governing
  *         permissions and limitations under the License..
  * 
- *         Copyright (c) 2024 by Klaus Tachtler.
+ *         Copyright (c) 2026 by Klaus Tachtler.
  ******************************************************************************/
 public class FooterMilterHandler extends AbstractMilterHandler {
 
@@ -151,110 +151,108 @@ public class FooterMilterHandler extends AbstractMilterHandler {
 				"JMilter - ENTRY: connect                : MilterContext context, String hostname, @Nullable InetAddress address");
 		log.debug("----------------------------------------: ");
 
-		InetAddress address = ((InetSocketAddress) socketAddress).getAddress();
-
 		log.debug("*hostname                               : " + hostname);
 		log.debug("*family                                 : " + String.valueOf(family));
 		log.debug("*port                                   : " + String.valueOf(port));
-		log.debug("*address.getCanonicalHostName()         : " + address.getCanonicalHostName());
-		log.debug("*address.getHostAddress()               : " + address.getHostAddress());
-		log.debug("*address.getHostName()                  : " + address.getHostName());
+		log.debug("*socketAddress                          : " + socketAddress);
+		
+		if (socketAddress != null) {
+			InetAddress address = ((InetSocketAddress) socketAddress).getAddress();
 
-		byte[] addr = address.getAddress();
-		short[] octet = new short[4];
+			log.debug("*address.getCanonicalHostName()         : " + address.getCanonicalHostName());
+			log.debug("*address.getHostAddress()               : " + address.getHostAddress());
+			log.debug("*address.getHostName()                  : " + address.getHostName());
 
-		for (int i = 0; i <= addr.length - 1; i++) {
-			if (addr[i] <= 127 && addr[i] >= -127 && addr[i] < 0) {
-				octet[i] = (short) (addr[i] + 256);
-			} else if (addr[i] <= 127 && addr[i] >= -127 && addr[i] > 0) {
-				octet[i] = addr[i];
-			} else {
-				octet[i] = 0;
+			byte[] addr = address.getAddress();
+			int[] octets = new int[addr.length];
+
+			for (int i = 0; i < addr.length; i++) {
+				octets[i] = addr[i] & 0xFF;
 			}
-		}
 
-		log.debug("*address.getAddress()                   : " + "Octet: " + Arrays.toString(octet) + " / Byte: "
-				+ Arrays.toString(addr));
-		log.debug("*address.isAnyLocalAddress()            : " + address.isAnyLocalAddress());
-		log.debug("*address.isLinkLocalAddress()           : " + address.isLinkLocalAddress());
-		log.debug("*address.isLoopbackAddress()            : " + address.isLoopbackAddress());
-		log.debug("*address.isMCGlobal()                   : " + address.isMCGlobal());
-		log.debug("*address.isMCLinkLocal()                : " + address.isMCLinkLocal());
-		log.debug("*address.isMCNodeLocal()                : " + address.isMCNodeLocal());
-		log.debug("*address.isMCOrgLocal()                 : " + address.isMCOrgLocal());
-		log.debug("*address.isMCSiteLocal()                : " + address.isMCSiteLocal());
-		log.debug("*address.isMulticastAddress()           : " + address.isMulticastAddress());
+			log.debug("*address.getAddress()                   : " + "Octet: " + Arrays.toString(octets) + " / Byte: "
+					+ Arrays.toString(addr));
+			log.debug("*address.isAnyLocalAddress()            : " + address.isAnyLocalAddress());
+			log.debug("*address.isLinkLocalAddress()           : " + address.isLinkLocalAddress());
+			log.debug("*address.isLoopbackAddress()            : " + address.isLoopbackAddress());
+			log.debug("*address.isMCGlobal()                   : " + address.isMCGlobal());
+			log.debug("*address.isMCLinkLocal()                : " + address.isMCLinkLocal());
+			log.debug("*address.isMCNodeLocal()                : " + address.isMCNodeLocal());
+			log.debug("*address.isMCOrgLocal()                 : " + address.isMCOrgLocal());
+			log.debug("*address.isMCSiteLocal()                : " + address.isMCSiteLocal());
+			log.debug("*address.isMulticastAddress()           : " + address.isMulticastAddress());
 
-		try {
-			log.debug("*address.isReachable(timeout)           : " + address.isReachable(timeout));
-		} catch (IOException eIOException) {
-			FooterMilterException.InitException(false);
+			try {
+				log.debug("*address.isReachable(timeout)           : " + address.isReachable(timeout));
+			} catch (IOException eIOException) {
+				FooterMilterException.InitException(false);
 
-			log.error("Exception: " + "IOException");
-			log.error("Caused by: " + ExceptionUtils.getStackTrace(eIOException));
-		}
+				log.error("Exception: " + "IOException");
+				log.error("Caused by: " + ExceptionUtils.getStackTrace(eIOException));
+			}			
+		
+			NetworkInterface netif = null;
+			try {
+				netif = NetworkInterface.getByInetAddress(address);
 
-		NetworkInterface netif = null;
-		try {
-			netif = NetworkInterface.getByInetAddress(address);
+				if (netif != null) {
 
-			if (netif != null) {
+					log.debug("*netif.getDisplayName()                 : " + netif.getDisplayName());
+					log.debug("*netif.getIndex()                       : " + netif.getIndex());
+					log.debug("*netif.getMTU()                         : " + netif.getMTU());
+					log.debug("*netif.getName()                        : " + netif.getName());
 
-				log.debug("*netif.getDisplayName()                 : " + netif.getDisplayName());
-				log.debug("*netif.getIndex()                       : " + netif.getIndex());
-				log.debug("*netif.getMTU()                         : " + netif.getMTU());
-				log.debug("*netif.getName()                        : " + netif.getName());
+					byte[] hwAddr = netif.getHardwareAddress();
+					String hwAddrString = null;
+					StringBuilder stringBuilder = new StringBuilder();
 
-				byte[] hwAddr = netif.getHardwareAddress();
-				String hwAddrString = null;
-				StringBuilder stringBuilder = new StringBuilder();
-
-				if (hwAddr != null && hwAddr.length > 0) {
-					for (byte b : hwAddr) {
-						stringBuilder.append(String.format("%02x:", b));
+					if (hwAddr != null && hwAddr.length > 0) {
+						for (byte b : hwAddr) {
+							stringBuilder.append(String.format("%02x:", b));
+						}
+						hwAddrString = stringBuilder.deleteCharAt(stringBuilder.length() - 1).toString();
 					}
-					hwAddrString = stringBuilder.deleteCharAt(stringBuilder.length() - 1).toString();
+
+					log.debug("*netif.getHardwareAddress()             : " + hwAddrString);
+
+					Enumeration<InetAddress> inetAddresses = netif.getInetAddresses();
+					for (InetAddress inetAddress : Collections.list(inetAddresses)) {
+						log.debug("*netif.getInetAddresses()               : " + inetAddress);
+					}
+
+					log.debug("*netif.getInterfaceAddresses()          : " + netif.getInterfaceAddresses());
+					log.debug("*netif.getParent()                      : " + netif.getParent());
+
+					Enumeration<NetworkInterface> networkInterfaces = netif.getSubInterfaces();
+					for (NetworkInterface networkInterface : Collections.list(networkInterfaces)) {
+						log.debug("*netif.getSubInterfaces()               : " + networkInterface);
+					}
+
+					log.debug("*netif.isLoopback()                     : " + netif.isLoopback());
+					log.debug("*netif.isPointToPoint()                 : " + netif.isPointToPoint());
+					log.debug("*netif.isUp()                           : " + netif.isUp());
+					log.debug("*netif.isVirtual()                      : " + netif.isVirtual());
+					log.debug("*netif.supportsMulticast()              : " + netif.supportsMulticast());
 				}
 
-				log.debug("*netif.getHardwareAddress()             : " + hwAddrString);
+			} catch (SocketException eSocketException) {
+				FooterMilterException.InitException(false);
 
-				Enumeration<InetAddress> inetAddresses = netif.getInetAddresses();
-				for (InetAddress inetAddress : Collections.list(inetAddresses)) {
-					log.debug("*netif.getInetAddresses()               : " + inetAddress);
-				}
-
-				log.debug("*netif.getInterfaceAddresses()          : " + netif.getInterfaceAddresses());
-				log.debug("*netif.getParent()                      : " + netif.getParent());
-
-				Enumeration<NetworkInterface> networkInterfaces = netif.getSubInterfaces();
-				for (NetworkInterface networkInterface : Collections.list(networkInterfaces)) {
-					log.debug("*netif.getSubInterfaces()               : " + networkInterface);
-				}
-
-				log.debug("*netif.isLoopback()                     : " + netif.isLoopback());
-				log.debug("*netif.isPointToPoint()                 : " + netif.isPointToPoint());
-				log.debug("*netif.isUp()                           : " + netif.isUp());
-				log.debug("*netif.isVirtual()                      : " + netif.isVirtual());
-				log.debug("*netif.supportsMulticast()              : " + netif.supportsMulticast());
+				log.error("Exception: " + "SocketException");
+				log.error("Caused by: " + ExceptionUtils.getStackTrace(eSocketException));
 			}
 
-		} catch (SocketException eSocketException) {
-			FooterMilterException.InitException(false);
+			try {
+				log.debug("*address.isReachable(netif, ttl, time...: " + address.isReachable(netif, ttl, timeout));
+			} catch (IOException eIOException) {
+				FooterMilterException.InitException(false);
 
-			log.error("Exception: " + "SocketException");
-			log.error("Caused by: " + ExceptionUtils.getStackTrace(eSocketException));
+				log.error("Exception: " + "IOException");
+				log.error("Caused by: " + ExceptionUtils.getStackTrace(eIOException));
+			}
+			log.debug("*address.isSiteLocalAddress()           : " + address.isSiteLocalAddress());
 		}
-
-		try {
-			log.debug("*address.isReachable(netif, ttl, time...: " + address.isReachable(netif, ttl, timeout));
-		} catch (IOException eIOException) {
-			FooterMilterException.InitException(false);
-
-			log.error("Exception: " + "IOException");
-			log.error("Caused by: " + ExceptionUtils.getStackTrace(eIOException));
-		}
-		log.debug("*address.isSiteLocalAddress()           : " + address.isSiteLocalAddress());
-
+		
 		logContext(context);
 		logContext(context, CommandCode.SMFIC_CONNECT.code());
 
