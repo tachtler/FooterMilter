@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024 Klaus Tachtler. All Rights Reserved.
+ * Copyright (c) 2026 Klaus Tachtler. All Rights Reserved.
  * Klaus Tachtler. <klaus@tachtler.net>
  * http://www.tachtler.net
  */
@@ -45,7 +45,7 @@ import org.ini4j.InvalidFileFormatException;
  *         implied. See the License for the specific language governing
  *         permissions and limitations under the License..
  * 
- *         Copyright (c) 2024 by Klaus Tachtler.
+ *         Copyright (c) 2026 by Klaus Tachtler.
  ******************************************************************************/
 public class FooterMilterCLIArgsParser {
 
@@ -65,7 +65,7 @@ public class FooterMilterCLIArgsParser {
 
 		final String USAGE = "/path/to/java -jar /path/to/FooterMilter.jar \r\n       [-c <path and name of the config file>] [-h] [-v] [-d]";
 		final String HEADER = "\r\nFooterMilter for Sendmail or Postfix to insert a footer at the end of the body.\r\n\r\n";
-		final String FOOTER = "\r\nCopyright (c) 2024 Klaus Tachtler, <klaus@tachtler.net>.\r\nAll Rights Reserved.\r\nVersion 1.2.\r\n\r\n";
+		final String FOOTER = "\r\nCopyright (c) 2026 Klaus Tachtler, <klaus@tachtler.net>.\r\nAll Rights Reserved.\r\nVersion 1.2.1.\r\n\r\n";
 
 		Options options = new Options();
 
@@ -111,7 +111,7 @@ public class FooterMilterCLIArgsParser {
 				 * Check, set or error on [server] listen.
 				 */
 				if (isConfigSectionParamValueValid(iniConfig, "server", "listen",
-						"<IPv4-Address or Hostname to listen>")) {
+						"<IP-Address or Hostname to listen>")) {
 					setServerListen(iniConfig, argsBean);
 				}
 
@@ -195,7 +195,7 @@ public class FooterMilterCLIArgsParser {
 			argsBean.setInetAddress(InetAddress.getByName(iniConfig.get("server", "listen")));
 		} catch (UnknownHostException eUnknownHostException) {
 			throw new FooterMilterException(true,
-					"Configuration at section [server] Parameter: listen <IPv4-Address or Hostname to listen> is NOT a valid IPv4 address or hostname!",
+					"Configuration at section [server] Parameter: listen <IP-Address or Hostname to listen> is NOT a valid IP address or hostname!",
 					eUnknownHostException);
 		}
 
