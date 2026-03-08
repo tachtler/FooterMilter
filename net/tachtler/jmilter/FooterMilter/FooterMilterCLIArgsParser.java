@@ -64,13 +64,13 @@ public class FooterMilterCLIArgsParser {
 
 		log.debug("*args                                   : " + args);
 
-		final String USAGE = "/path/to/java -jar /path/to/FooterMilter.jar \r\n       [-c <path and name to the config file>] [-h] [-v] [-d]";
-		final String HEADER = "\r\nFooterMilter for Sendmail or Postfix to insert a footer at the end of the body.\r\n\r\n";
-		final String FOOTER = "\r\nCopyright (c) 2026 Klaus Tachtler, <klaus@tachtler.net>.\r\nAll Rights Reserved.\r\nVersion 1.2.2.\r\n\r\n";
+		final String USAGE = "/path/to/java -jar /path/to/FooterMilter.jar\r\n";
+		final String HEADER = "   FooterMilter for Postfix/Sendmail for inserting a footer at the end of the body text.";
+		final String FOOTER = "   Copyright (c) 2026 Klaus Tachtler, <klaus@tachtler.net>.\r\nAll Rights Reserved.\r\nVersion 1.2.2.\r\n\r\n";
 
 		Options options = new Options();
 
-		options.addOption(Option.builder("c").longOpt("config").required(false).hasArg(true).since("1.0.0").desc("Path and name to the config file [REQUIRED]").get());
+		options.addOption(Option.builder("c").longOpt("config").required(false).hasArg(true).argName("file").since("1.0.0").desc("Path and name to the config file [REQUIRED]").get());
 		options.addOption(Option.builder("h").longOpt("help").required(false).hasArg(false).since("1.0.0").desc("Print this usage information").get());
 		options.addOption(Option.builder("v").longOpt("version").required(false).hasArg(false).since("1.0.0").desc("Version of the program").get());
 		options.addOption(Option.builder("d").longOpt("debug").required(false).hasArg(false).since("1.0.0").desc("DEBUG mode with runtime output").get());
