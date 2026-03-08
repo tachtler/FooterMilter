@@ -15,7 +15,8 @@ import java.util.HashMap;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.help.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.logging.log4j.Level;
@@ -63,34 +64,45 @@ public class FooterMilterCLIArgsParser {
 
 		log.debug("*args                                   : " + args);
 
-		final String USAGE = "/path/to/java -jar /path/to/FooterMilter.jar \r\n       [-c <path and name of the config file>] [-h] [-v] [-d]";
+		final String USAGE = "/path/to/java -jar /path/to/FooterMilter.jar \r\n       [-c <path and name to the config file>] [-h] [-v] [-d]";
 		final String HEADER = "\r\nFooterMilter for Sendmail or Postfix to insert a footer at the end of the body.\r\n\r\n";
-		final String FOOTER = "\r\nCopyright (c) 2026 Klaus Tachtler, <klaus@tachtler.net>.\r\nAll Rights Reserved.\r\nVersion 1.2.1.\r\n\r\n";
+		final String FOOTER = "\r\nCopyright (c) 2026 Klaus Tachtler, <klaus@tachtler.net>.\r\nAll Rights Reserved.\r\nVersion 1.2.2.\r\n\r\n";
 
 		Options options = new Options();
 
-		options.addOption("h", "help", false, "Print this usage information");
-		options.addOption("v", "version", false, "Version of the program");
-		options.addOption("d", "debug", false, "DEBUG mode with runtime output");
-		options.addOption("c", "config", true, "[REQUIRED] Path and name of the config file");
+		options.addOption(Option.builder("c").longOpt("config").required(false).hasArg(true).since("1.0.0").desc("Path and name to the config file [REQUIRED]").get());
+		options.addOption(Option.builder("h").longOpt("help").required(false).hasArg(false).since("1.0.0").desc("Print this usage information").get());
+		options.addOption(Option.builder("v").longOpt("version").required(false).hasArg(false).since("1.0.0").desc("Version of the program").get());
+		options.addOption(Option.builder("d").longOpt("debug").required(false).hasArg(false).since("1.0.0").desc("DEBUG mode with runtime output").get());
 
-		CommandLineParser parser = new DefaultParser();
-		CommandLine cmd = parser.parse(options, args, false);
+		CommandLineParser infoParser = new DefaultParser();
+		CommandLine infoCmd = infoParser.parse(options, args, false);
 
 		/* -h,--help */
-		if (cmd.hasOption("h")) {
-			HelpFormatter helpFormatter = new HelpFormatter();
-			helpFormatter.setWidth(80);
-			helpFormatter.printHelp(USAGE, HEADER, options, FOOTER);
+		if (infoCmd.hasOption("h")) {
+			HelpFormatter helpFormatter = HelpFormatter.builder().get();
+			try {
+				helpFormatter.printHelp(USAGE, HEADER, options, FOOTER, true);
+			} catch (IOException eIOException) {
+				throw new FooterMilterException(false, eIOException);
+			}
 			System.exit(0);
-		}
-
+		}	
+		
 		/* -v,--version */
-		if (cmd.hasOption("v")) {
+		if (infoCmd.hasOption("v")) {
 			System.out.println(FOOTER);
 			System.exit(0);
 		}
 
+		options.addOption(Option.builder("c").longOpt("config").required(true).hasArg(true).since("1.0.0").desc("Path and name to the config file [REQUIRED]").get());
+		options.addOption(Option.builder("h").longOpt("help").hasArg(false).since("1.0.0").desc("Print this usage information").get());
+		options.addOption(Option.builder("v").longOpt("version").hasArg(false).since("1.0.0").desc("Version of the program").get());
+		options.addOption(Option.builder("d").longOpt("debug").hasArg(false).since("1.0.0").desc("DEBUG mode with runtime output").get());	
+		
+		CommandLineParser parser = new DefaultParser();
+		CommandLine cmd = parser.parse(options, args, false);	
+		
 		/* -d,--debug */
 		if (cmd.hasOption("d")) {
 			Configurator.setRootLevel(Level.DEBUG);
@@ -142,7 +154,12 @@ public class FooterMilterCLIArgsParser {
 						eIOException);
 			}
 		} else {
-			new HelpFormatter().printHelp(USAGE, HEADER, options, FOOTER);
+			HelpFormatter helpFormatter = HelpFormatter.builder().get();
+			try {
+				helpFormatter.printHelp(USAGE, HEADER, options, FOOTER, true);
+			} catch (IOException eIOException) {
+				throw new FooterMilterException(false, eIOException);
+			}
 			throw new FooterMilterException(true,
 					"Required parameter -c,--config <Path and name of the config file> NOT specified!");
 		}
