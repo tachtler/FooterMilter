@@ -71,20 +71,28 @@ drwxr-xr-x 3 klaus klaus  4096 Apr 21  2022 net
 Whether the downloaded **Java** - `FooterMilter.jar` archive file is **executable** can be **tested with the following command** and should produce an output like the following one:
 
 ```
-# java -jar /tmp/FooterMilter-master/FooterMilter.jar -h
-usage: /path/to/java -jar /path/to/FooterMilter.jar
-       [-c <path and name of the config file>] [-h] [-v] [-d]
+ usage:  /path/to/java -jar /path/to/FooterMilter.jar
+    [-c <path and name to the config file>] [-h] [-v] [-d] [-c <arg>] [-d]
+    [-h] [-v]
 
-FooterMilter for Sendmail or Postfix to insert a footer at the end of the body.
 
- -c,--config <arg>   [REQUIRED] Path and name of the config file
- -d,--debug          DEBUG mode with runtime output
- -h,--help           Print this usage information
- -v,--version        Version of the program
+    FooterMilter for Sendmail or Postfix to insert a footer at the end of
+    the body.
 
-Copyright (c) 2024 Klaus Tachtler, <klaus@tachtler.net>.
-All Rights Reserved.
-Version 1.2.
+
+
+
+      Options           Since                    Description               
+ -c, --config <arg>     1.0.0     Path and name to the config file         
+                                   [REQUIRED]                              
+ -h, --help             1.0.0     Print this usage information             
+ -v, --version          1.0.0     Version of the program                   
+ -d, --debug            1.0.0     DEBUG mode with runtime output           
+
+
+    Copyright (c) 2026 Klaus Tachtler, <klaus@tachtler.net>.
+    All Rights Reserved.
+    Version 1.2.2.
 ```
 
 :exclamation: **IMPORTANT** - The **Java** - `FooterMilter.jar` archive file can **ONLY be executed** if the other files are also present in the described directory structure, **especially the directory** `lib` **and it's content, must be in the same directory !**
