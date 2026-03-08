@@ -72,23 +72,17 @@ Whether the downloaded **Java** - `FooterMilter.jar` archive file is **executabl
 
 ```
  usage:  /path/to/java -jar /path/to/FooterMilter.jar
-    [-c <path and name to the config file>] [-h] [-v] [-d] [-c <arg>] [-d]
-    [-h] [-v]
+    [-c <file>] [-d] [-h] [-v]
 
+    FooterMilter for Postfix/Sendmail for inserting a footer at the end of
+    the body text.
 
-    FooterMilter for Sendmail or Postfix to insert a footer at the end of
-    the body.
-
-
-
-
-      Options           Since                    Description               
- -c, --config <arg>     1.0.0     Path and name to the config file         
-                                   [REQUIRED]                              
- -h, --help             1.0.0     Print this usage information             
- -v, --version          1.0.0     Version of the program                   
- -d, --debug            1.0.0     DEBUG mode with runtime output           
-
+       Options           Since                   Description               
+ -c, --config <file>     1.0.0     Path and name to the config file        
+                                    [REQUIRED]                             
+ -h, --help              1.0.0     Print this usage information            
+ -v, --version           1.0.0     Version of the program                  
+ -d, --debug             1.0.0     DEBUG mode with runtime output          
 
     Copyright (c) 2026 Klaus Tachtler, <klaus@tachtler.net>.
     All Rights Reserved.
@@ -448,7 +442,7 @@ The following command can be used to query the status of the **FooterMilter** `s
    CGroup: /system.slice/footermilter.service
            └─12731 /usr/bin/java -jar FooterMilter.jar -c footermilter.ini
 
-Apr 20 13:13:27 server70.idmz.tachtler.net systemd[1]: Started FooterMilter J...
+Apr 20 13:13:27 server70.idmz.tachtler.net systemd: Started FooterMilter J...
 Hint: Some lines were ellipsized, use -l to show in full.
 ```
 
