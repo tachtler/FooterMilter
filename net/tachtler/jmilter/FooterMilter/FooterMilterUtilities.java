@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024 Klaus Tachtler. All Rights Reserved.
+ * Copyright (c) 2026 Klaus Tachtler. All Rights Reserved.
  * Klaus Tachtler. <klaus@tachtler.net>
  * http://www.tachtler.net
  */
@@ -50,7 +50,7 @@ import io.netty.handler.codec.base64.Base64;
  *         implied. See the License for the specific language governing
  *         permissions and limitations under the License..
  * 
- *         Copyright (c) 2024 by Klaus Tachtler.
+ *         Copyright (c) 2026 by Klaus Tachtler.
  ******************************************************************************/
 public class FooterMilterUtilities {
 
@@ -294,7 +294,7 @@ public class FooterMilterUtilities {
 			throw new FooterMilterException(false, eIOException);
 		}
 
-		log.debug("*bodyString   <- (Start at next line) -> : " + System.lineSeparator() + bodyString);
+		log.debug("*bodyString  <- (Start at next line) -> : " + System.lineSeparator() + bodyString);
 
 		return bodyString;
 	}
