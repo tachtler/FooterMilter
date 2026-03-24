@@ -66,7 +66,7 @@ public class FooterMilterCLIArgsParser {
 
 		final String USAGE = "/path/to/java -jar /path/to/FooterMilter.jar\r\n";
 		final String HEADER = "   FooterMilter for Postfix/Sendmail for inserting a footer at the end of the body text.";
-		final String FOOTER = "   Copyright (c) 2026 Klaus Tachtler, <klaus@tachtler.net>.\r\nAll Rights Reserved.\r\nVersion 1.3.0.";
+		final String FOOTER = "   Copyright (c) 2026 Klaus Tachtler, <klaus@tachtler.net>.\r\nAll Rights Reserved.\r\nVersion 1.3.1.";
 
 		Options options = new Options();
 
