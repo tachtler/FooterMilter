@@ -69,10 +69,6 @@ public class FooterMilterInitBean {
 	 * @throws FooterMilterException
 	 */
 	public final void init() throws FooterMilterException {
-		InetAddress.getLoopbackAddress();
-		this.port = 10099;
-		this.mapText.clear();
-		this.mapHtml.clear();
 	}
 
 	/**
