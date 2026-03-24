@@ -86,7 +86,7 @@ Whether the downloaded **Java** - `FooterMilter.jar` archive file is **executabl
 
     Copyright (c) 2026 Klaus Tachtler, <klaus@tachtler.net>.
     All Rights Reserved.
-    Version 1.3.0.
+    Version 1.3.1.
 ```
 
 :exclamation: **IMPORTANT** - The **Java** - `FooterMilter.jar` archive file can **ONLY be executed** if the other files are also present in the described directory structure, **especially the directory** `lib` **and it's content, must be in the same directory !**
