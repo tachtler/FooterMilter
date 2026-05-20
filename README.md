@@ -6,6 +6,12 @@ The following DokuWiki contains detailed instructions for installation and confi
 
 [Tachtler's DokuWiki - Postfix CentOS 7 - FooterMilter einbinden (footermilter)](https://dokuwiki.tachtler.net/doku.php?id=tachtler:postfix_centos_7_-_footermilter_einsetzen_footermilter)
 
+## Arch Linux AUR package available
+
+FooterMilter can also be installed on Arch Linux by integrating the [AUR repository](https://aur.archlinux.org).
+
+See also the link: [AUR - footermilter](https://aur.archlinux.org/packages/footermilter)
+
 ## Installation and Configuration
 The description of the installation and configuration of **FooterMilter** is divided into the following parts sections:
 
